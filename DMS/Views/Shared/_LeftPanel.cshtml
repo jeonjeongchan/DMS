@@ -1,0 +1,89 @@
+<aside class="page-sidebar">
+    <partial name="_Logo" />
+    <nav id="js-primary-nav" class="primary-nav" role="navigation">
+        <ul id="DMS_LeftMenu" class="nav-menu">
+        </ul>
+    </nav>
+</aside>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: "/Menu/CreateMenu",
+                dataType: "json",
+                type: "get",
+                success: function (data) {
+                    //console.log(data);
+                    let menu = data;
+                    let array = [];
+                    menu.forEach((m, index) => {
+                        array.push("<li class='DMS_LeftMenu_li' order='" + m.order + "' menuName='" + m.name + "' address='" + m.address + "'><a href='" + m.address + "'><i class='" + m.icon + "'></i><span class='nav-link-text'>" + m.name + "</span></a></li>")
+                    });
+
+                    $("#DMS_LeftMenu").append(array);
+
+                    let menuAll = $("#DMS_LeftMenu > li");
+                    let menuAttr = $(".DMS_LeftMenu_li");
+
+                    $.each(menuAttr, function (i, e) {
+
+                        let menuName = $(e).attr("menuName");
+                        let address = $(e).attr("address");
+
+                        if (address == window.location.pathname) {
+                            $(e).addClass("active");
+                            return false;
+                        }
+
+                        console.log("어드레스 : " + address);
+
+                    });
+
+
+
+
+                    ////$(".DMS_LeftMenu_li:first").addClass("active");
+
+                    //$.each(menuAttr, function (i, e) {
+                        
+                    //    let menuName = $(e).attr("menuName");
+                    //    let address = $(e).attr("address");
+                    //    console.log("어드레스 : " + address);
+
+                    //    $(e).on('click', function (index, a) {
+                    //        if (!$(e).hasClass("active")) {
+                    //            menuAll.removeClass("active");
+                    //            $(e).addClass("active");
+                    //        }
+
+                    //        $.ajax({
+                    //            url: address,
+                    //            //url: address + 'Patital',
+                    //            method: 'GET',
+                    //            success: function (response) {
+                    //               //$('#js-page-content').load(window.location.href + ' #js-page-content');
+                    //               //$('#js-page-content').html(response);
+                    //            },
+                    //            error: function (xhr, status, error) {
+                    //                console.error('Error:', error);
+                    //            }
+                    //        });
+
+
+
+                    //    });
+
+                    //});
+
+                },
+                error: function (data) {
+                    alert("Error");
+                }
+            });
+
+        });
+    </script>
+
+
+

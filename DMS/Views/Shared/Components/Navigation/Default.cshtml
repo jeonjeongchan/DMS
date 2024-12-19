@@ -1,0 +1,25 @@
+﻿<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: "/Main/CreateMenu",
+            dataType: "json",
+            type: "get",
+            success: function (data) {
+                console.log(data);
+                let menu = data;
+                let array = ["<ol>"];
+                menu.forEach(member => array.push("<li> name : " + member.name + "<br/> age : " + member.age + "<br/> gender : " + member.gender + "</li> <br/>"));
+                array.push("</ol>"); $("#js-primary-nav").html(array.join(""));
+
+            },
+            error: function (data) {
+                alert("Error");
+            }
+        });
+
+    });</script>
+
+<nav id="js-primary-nav" class="primary-nav" role="navigation">
+
+</nav>

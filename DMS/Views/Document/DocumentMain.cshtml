@@ -1,0 +1,571 @@
+@model IEnumerable<DMS.Models.T_Document>
+@{
+    ViewData["Title"] = "메인화면";
+    ViewData["PageName"] = "document_main";
+    ViewData["Category1"] = "문서관리";
+    ViewData["Heading"] = "<i class='subheader-icon fal fa-chart-area'></i> Marketing <span class='fw-300'>문서관리</span>";
+
+}
+
+@section HeadBlock {
+    <link rel="stylesheet" media="screen, print" href="~/css/datagrid/datatables/datatables.bundle.css">
+    <link rel="stylesheet" media="screen, print" href="~/css/theme-demo.css">
+    <link rel="stylesheet" media="screen, print" href="~/css/formplugins/dropzone/dropzone.css">
+}
+
+@{
+    int index = 1;
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div id="panel-2" class="panel">
+            <div class="panel-container show">
+                <div class="panel-content">
+                    <div class="buttons">
+                        <button type="button" id="documentCreate" class="btn btn-primary" data-toggle="modal" data-target="#documentFormModal">등록</button>
+                        <button type="button" id="documentEdit" class="btn btn-warning" data-toggle="modal">수정</button>
+                        <button type="button" id="documentDelete" class="btn btn-danger" data-toggle="modal">삭제</button>
+                    </div>
+                    <table id="DocumentMainTable" class="table table-bordered table-hover table-striped w-100">
+                        <thead class="bg-warning-200">
+                            <tr>
+                                <th>번호</th>
+                                <th>문서이름</th>
+                                <th>리비전</th>
+                                <th>상태</th>
+                                <th>작성자</th>
+                                <th>작성일</th>
+                                <th>수정자</th>
+                                <th>수정일</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr data-oid="@item.OID" ondblclick="DocumentDetail(this)">
+                                    <td>
+                                        @index
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.TITLE)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.REVISION)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.STATE)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.CREATE_USER)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.CREATE_DATE)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.MODIFY_USER)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.MODIFY_DATE)
+                                    </td>
+                                </tr>
+                                    index++;
+                                }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- 문서모달 -->
+<div class="modal fade" id="documentFormModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="documentFormModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="documentForm">
+                    <div class="form-group">
+                        <label class="form-label" for="title">문서제목</label>
+                        <input type="text" id="title" class="form-control" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="content">내용</label>
+                        <textarea class="form-control" id="content" rows="5"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="state">상태</label>
+                        <input type="text" id="state" class="form-control" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="create_user">작성자</label>
+                        <input type="text" id="create_user" class="form-control" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="modify_user">수정자</label>
+                        <input type="text" id="modify_user" class="form-control" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="create_date">작성일</label>
+                        <input class="form-control" id="create_date" type="date" name="date">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="modify_date">수정일</label>
+                        <input class="form-control" id="modify_date" type="date" name="date">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="example-number">리비전</label>
+                        <input class="form-control" id="revision" type="number" name="number" value="" readonly="readonly">
+                    </div>
+                    <div id="fileSelect" class="form-group mb-0">
+                        <label class="form-label">파일 등록</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="documentFile">
+                            <label class="custom-file-label" for="documentFile">파일 선택</label>
+                        </div>
+                    </div>
+                    <div id="fileDownload" class="form-group">
+                        <label class="form-label" for="file">첨부 파일</label>
+                        <input type="text"  readonly="" class="form-control-plaintext" id="file" value="">
+                    </div>
+                    <div class="panel-content border-faded border-left-0 border-right-0 border-bottom-0 d-flex flex-row">
+                        <button id="documentCreateSubmit" class="btn btn-primary ml-auto">등록</button>
+                        <button id="documentEditSubmit" class="btn btn-primary ml-auto">수정</button>
+                    </div>  
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section ScriptsBlock {
+    <script type="text/javascript">/* Activate smart panels */
+        $('#js-page-content').smartPanel();</script>
+    <script src="~/js/statistics/peity/peity.bundle.js"></script>
+    <script src="~/js/statistics/flot/flot.bundle.js"></script>
+    <script src="~/js/statistics/easypiechart/easypiechart.bundle.js"></script>
+    <script src="~/js/datagrid/datatables/datatables.bundle.js"></script>
+    <script src="~/js/formplugins/dropzone/dropzone.js"></script>
+    <script>
+
+        function downloadFile(fileName) {
+            const url = `/files/download?fileName=${encodeURIComponent(fileName)}`;
+            window.location.href = url;
+        }
+
+
+        function dateChange(dateInput) {
+            if (dateInput != "" && dateInput != null) {
+                var dateObject = new Date(dateInput);
+                var isoDateString = dateObject.toISOString();
+
+                return isoDateString;
+
+            } else {
+                return null;
+            }
+
+        }
+
+        function createFormDateChange(today) {
+            if (today == null || today == undefined) {
+                today = new Date();
+                var dd = String(today.getDate()).padStart(2, '0');
+                var mm = String(today.getMonth() + 1).padStart(2, '0');
+                var yyyy = today.getFullYear();
+                today = yyyy + '-' + mm + '-' + dd;
+            } else {
+                today = today.substring(0, 10);
+            }
+
+
+            return today;
+        }
+
+
+        // 문서상세
+        function DocumentDetail(row) {
+
+            $('#documentForm')[0].reset();
+            const oid = row.getAttribute('data-oid');
+
+            $('#documentFormModalLabel').text('문서상세');
+            $('input').prop('readonly', true);
+            $('textarea').prop('readonly', true);
+            $('#fileSelect').hide();
+            $('#documentCreateSubmit').hide();
+            $('#documentEditSubmit').hide();
+            $('#fileDownload').show();
+
+            $.ajax({
+                url: '/Document/' + oid,
+                type: 'GET',
+                success: function (data) {
+                    debugger;
+                    $('#documentFormModal').modal('show');
+                    $('#title').val(data.title);
+                    $('#content').val(data.content);
+
+                    if (data.creatE_DATE != undefined || data.creatE_DATE != null) {
+                        $('#create_date').val(createFormDateChange(data.creatE_DATE));
+                    } else {
+                        $('#create_date').val(null);
+                    }
+
+                    if (data.modifY_DATE != undefined || data.modifY_DATE != null) {
+                        $('#modify_date').val(createFormDateChange(data.modifY_DATE));
+                    } else {
+                        $('#modify_date').val(null);
+                    }
+
+                    $('#create_user').val(data.creatE_USER);
+                    $('#modify_user').val(data.modifY_USER);
+                    $('#revision').val(data.revision);
+                    $('#state').val(data.state);
+
+                    if (data.file_list != null) {
+                        $('#file').val(data.file_list[0].filE_NAME);
+                        var fileUrlParameter = data.file_list[0].filE_NAME;
+                        var fileUrl = "downloadFile(\'" + fileUrlParameter + "\')";
+                        $('#file').attr("ondblclick", fileUrl);
+                        $('#file').attr("seq", data.t_FILE_SEQ);
+  
+                    }
+
+    
+                },
+                error: function (xhr, status, error) {
+                    console.log('Error:', error);
+                }
+            });
+        }
+
+
+        $(document).ready(function () {
+
+            var documentId = null;
+
+            // 문서편집
+            $('#documentEdit').on('click', function () {
+                $('#documentForm')[0].reset();
+                documentId = null;
+                var count = $("#DocumentMainTable tr").filter(function () {
+                    return $(this).hasClass('selected');
+                }).length;
+
+                if (count > 1) {
+                    alert("문서 하나만 선택해주세요.");
+                } else if (count == 0) {
+                    alert("문서 하나를 선택해주세요.");
+                } else {
+                    documentId = $("tbody tr.selected").data("oid");
+
+                    $('#documentFormModalLabel').text('문서편집');
+                    $('#documentForm input').removeAttr('readonly');
+                    $('#fileSelect').show();
+                    $('#fileDownload').show();
+                    $('#documentForm textarea').removeAttr('readonly');
+                    $('#create_user').attr('readonly', 'readonly');
+                    $('#modify_user').attr('readonly', 'readonly');
+                    $('#create_date').attr('readonly', 'readonly');
+                    $('#modify_date').attr('readonly', 'readonly');
+                    $('#state').attr('readonly', 'readonly');
+                    $('#revision').attr('readonly', 'readonly');
+                    $('#documentCreateSubmit').hide();
+                    $('#documentEditSubmit').show();
+
+                    
+
+                    $.ajax({
+                        url: '/Document/' + documentId,
+                        type: 'GET',
+                        success: function (data) {
+                            debugger;
+                            $('#documentFormModal').modal('show');
+                            $('#title').val(data.title);
+                            $('#content').val(data.content);
+
+                            if (data.creatE_DATE != undefined || data.creatE_DATE != null) {
+                                $('#create_date').val(createFormDateChange(data.creatE_DATE));
+                            } else {
+                                $('#create_date').val(null);
+                            }
+
+                            if (data.modifY_DATE != undefined || data.modifY_DATE != null) {
+                                $('#modify_date').val(createFormDateChange(data.modifY_DATE));
+                            } else {
+                                $('#modify_date').val(null);
+                            }
+
+                            $('#create_user').val(data.creatE_USER);
+                            $('#modify_user').val(data.modifY_USER);
+                            $('#revision').val(data.revision);
+                            $('#state').val(data.state);
+
+                            if (data.file_list[0] != null) {
+                                $('#file').val(data.file_list[0].filE_NAME);
+                                var fileUrlParameter = data.file_list[0].filE_NAME;
+                                var fileUrl = "downloadFile(\'" + fileUrlParameter + "\')";
+                                $('#file').attr("ondblclick", fileUrl);
+                                $('#file').attr("seq", data.t_FILE_SEQ);
+                            }
+
+
+                        },
+                        error: function (xhr, status, error) {
+                            console.log('Error:', error);
+                        }
+                    });
+
+                }
+
+            });
+
+            // 문서삭제
+            $('#documentDelete').on('click', function () {
+                var selectedOids = [];
+                var count = $("#DocumentMainTable tr").filter(function () {
+                    return $(this).hasClass('selected');
+                }).length;
+
+                $("tbody tr.selected").each(function () {
+                    var oid = $(this).data("oid");
+                    selectedOids.push(oid);
+                });
+
+                if (count == 0) {
+                    alert("삭제할 문서를 선택해주세요.");
+                } else {
+                    event.preventDefault();
+                    if (confirm("삭제 하시겠습니까?")) {
+                        $.ajax({
+                            url: '/Document/Delete',
+                            type: 'DELETE',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ OIDs: selectedOids }),
+                            success: function (data) {
+                                alert('문서 삭제 성공');
+                                window.location.href = '/Document';
+
+                            },
+                            error: function (xhr, status, error) {
+                                console.log('Error:', error);
+                                window.location.href = '/Error';
+                            }
+                        });
+                    }
+                }
+
+            });
+
+            // 문서등록
+            $('#documentCreate').on('click', function () {
+                documentId = null;
+                $('#documentForm')[0].reset();
+                $('#documentFormModalLabel').text('문서등록');
+                $('#title').removeAttr('readonly', 'readonly');
+                $('#content').removeAttr('readonly', 'readonly');
+                $('#create_date').attr('readonly', 'readonly');
+                $('#modify_date').attr('readonly', 'readonly');
+                $('#state').attr('readonly', 'readonly');
+                $('#revision').attr('readonly', 'readonly');
+                $('#create_user').attr('readonly', 'readonly');
+                $('#modify_user').attr('readonly', 'readonly');
+                $('#fileSelect').show();
+                $('#documentCreateSubmit').show();
+                $('#documentEditSubmit').hide();
+                $('#fileDownload').hide();
+                if ($("#DocumentMainTable tr").hasClass('selected')) {
+                    $("#DocumentMainTable tr").removeClass('selected');
+                }
+                $('#create_date').val(createFormDateChange(null));
+            });
+
+
+            // 문서등록 완료
+            $('#documentCreateSubmit').on("click", async function () {
+                event.preventDefault();
+                if (confirm("등록 하시겠습니까?")) {
+                    debugger;
+                    var formData = new FormData();
+                    var method = 'POST';
+                    var urlMethod = '/Document';
+
+                    formData.append("TITLE", $('#title').val());
+                    formData.append("CONTENT", $('#content').val());
+
+                    var fileFormData = $("#documentFile")[0].files[0];
+                    if (fileFormData) {
+                        formData.append("T_File", fileFormData);
+                    }
+
+                    const response = await fetch(urlMethod, {
+                        method: method,
+                        body: formData
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error("문제가 발생하였습니다. 관리자에게 문의하세요.");
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            alert("Success: " + data.message);
+                            window.location.href = '/Document';
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            alert("Error: " + error.message);
+                        });
+                }
+
+            });
+
+            // 문서편집 완료
+            $('#documentEditSubmit').on('click', async function () {
+                event.preventDefault();
+                debugger;
+                if (confirm("수정 하시겠습니까?")) {
+                    var method = 'PUT';
+                    var urlMethod = '/Document/' + documentId;
+
+                    var create_dateChange = dateChange($('#create_date').val());
+                    var modifyDateChange = modifyDateChange = new Date();
+
+                    var formData = new FormData();
+
+                    formData.append("OID", documentId);
+                    formData.append("TYPE", "DOCUMENT");
+                    formData.append("TITLE", $('#title').val());
+                    formData.append("CONTENT", $('#content').val());
+                    formData.append("CREATE_USER", $('#create_user').val());
+                    formData.append("CREATE_DATE", create_dateChange);
+                    formData.append("T_FILE_SEQ", $("#file").attr("seq"));
+
+                    var fileFormData = $("#documentFile")[0].files[0];
+                    if (fileFormData) {
+                        formData.append("T_File", fileFormData);
+                    }
+
+
+                    const response = await fetch(urlMethod, {
+                        method: method,
+                        body: formData
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error("문제가 발생하였습니다. 관리자에게 문의하세요.");
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            alert("Success: " + data.message);
+                            window.location.href = '/Document';
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            alert("Error: " + error.message);
+                        });
+                }
+
+            });
+
+        });
+
+        $('#DocumentMainTable').dataTable({
+            responsive: true,
+            dom:
+                /*	--- Layout Structure
+                    --- Options
+                    l	-	length changing input control
+                    f	-	filtering input
+                    t	-	The table!
+                    i	-	Table information summary
+                    p	-	pagination control
+                    r	-	processing display element
+                    B	-	buttons
+                    R	-	ColReorder
+                    S	-	Select
+                    --- Markup
+                    < and >				- div element
+                    <"class" and >		- div with a class
+                    <"#id" and >		- div with an ID
+                    <"#id.class" and >	- div with an ID and a class
+                    --- Further reading
+                    https://datatables.net/reference/option/dom
+                    --------------------------------------
+                 */
+                "<'row mb-3'<'col-sm-12 col-md-6 d-flex align-items-center justify-content-start'f><'col-sm-12 col-md-6 d-flex align-items-center justify-content-end'B>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            select: 'multiple',
+            //columns: columnSet,
+            //altEditor: true,
+            //responsive: true,
+            buttons: [
+                //{
+                //    text: '등록',
+                //    //data-target: '#writeFormModal',
+                //    //data-toggle: 'modal'
+                //    className: 'btn-outline-default'
+                //}
+                //{
+                //    extend: 'colvis',
+                //    text: 'Column Visibility',
+                //    titleAttr: 'Col visibility',
+                //    className: 'btn-outline-default'
+                //},
+                //{
+                //    extend: 'csvHtml5',
+                //    text: 'CSV',
+                //    titleAttr: 'Generate CSV',
+                //    className: 'btn-outline-default'
+                //},
+                //{
+                //    extend: 'copyHtml5',
+                //    text: 'Copy',
+                //    titleAttr: 'Copy to clipboard',
+                //    className: 'btn-outline-default'
+                //},
+                //{
+                //    extend: 'print',
+                //    text: 'Print',
+                //    titleAttr: 'Print Table',
+                //    className: 'btn-outline-default'
+                //},
+                //{
+                //    extend: 'selected',
+                //    text: '<i class="fal fa-times mr-1"></i> 삭제',
+                //    name: 'delete',
+                //    className: 'btn-primary btn-sm mr-1'
+                //},
+                //{
+                //    extend: 'selected',
+                //    text: '<i class="fal fa-edit mr-1"></i> 수정',
+                //    name: 'edit',
+                //    className: 'btn-primary btn-sm mr-1'
+                //},
+                //{
+                //    text: '<i class="fal fa-plus mr-1"></i> 등록',
+                //    name: 'add',
+                //    className: 'btn-success btn-sm mr-1'
+                //},
+                //{
+                //    text: '<i class="fal fa-sync mr-1"></i> 새로고침',
+                //    name: 'refresh',
+                //    className: 'btn-primary btn-sm'
+                //}
+            ]
+        });</script>
+}
+
+

@@ -1,0 +1,67 @@
+﻿
+@model T_Member
+
+@{
+    ViewData["PageName"] = "account_register";
+}
+
+
+@section PageHeading {
+    <div class="col-xl-12">
+        <h2 class="fs-xxl fw-500 text-white text-center">
+            Register now, its free!
+            <small class="h3 fw-300 mt-3 mb-5 text-white opacity-60 hidden-sm-down">
+                Your registration is free for a limited time. Enjoy SmartAdmin on your mobile, desktop or tablet.
+                <br>It is ready to go wherever you go!
+            </small>
+        </h2>
+    </div>
+}
+
+@*<div class="col-xl-6 ml-auto mr-auto">
+    <div class="card p-4 rounded-plus bg-faded">
+        <form id="js-login" asp-controller="Account" asp-action="Register" method="post">
+            <div asp-validation-summary="All" class="alert alert-primary text-dark"></div>
+            <div class="form-group row">
+                <label class="col-xl-12 form-label">이름</label>
+                <div class="col-6 pl-1">
+                    <input type="text" asp-for="Name" class="form-control" placeholder="Name" />
+                    <span class="invalid-feedback" asp-validation-for="Name">Sorry, you missed this one.</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" asp-for="Login_id">아이디</label>
+                <input type="text" asp-for="Login_id" class="form-control" placeholder="아이디" value="" required="required" />
+                <span class="invalid-feedback" asp-validation-for="Login_id">Sorry, you missed this one.</span>
+            </div>
+            <div class="form-group">
+                <label class="form-label" asp-for="Password">비밀번호</label>
+                <input type="password" asp-for="Password" class="form-control" placeholder="비밀번호" value="" required="required" />
+                <span class="invalid-feedback" asp-validation-for="Password">Sorry, you missed this one.</span>
+            </div>
+            <div class="row no-gutters">
+                <div class="col-md-6 ml-auto text-right">
+                    <button id="js-login-btn" type="submit" class="btn btn-block btn-danger btn-lg mt-3">Send verification</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>*@
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $("#js-login-btn").click(function (event) {
+            // Fetch form to apply custom Bootstrap validation
+            var form = $("#js-login");
+
+            if (form[0].checkValidity() === false) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            form.addClass('was-validated');
+            // Perform ajax submit here...
+        });
+    </script>
+}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <partial name="_Head" />
+    @RenderSection("HeadBlock", required: false)
+</head>
+<body class="mod-bg-1 mod-nav-link mod-nav-link @ViewBag.PreemptiveClass">
+    <partial name="_ScriptsLoadingSaving" />
+    <div class="page-wrapper">
+        <div class="page-inner">
+            <partial name="_LeftPanel" />
+            <div class="page-content-wrapper">
+                <partial name="_PageHeader" />
+                <main id="js-page-content" role="main" class="page-content">
+                    <partial name="_PageBreadcrumb" />
+                    <div class="subheader">@RenderSection("Subheaderblock", required: false)</div>
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
+    </div>
+    <partial name="_ScriptsBasePlugins" />
+    @RenderSection("ScriptsBlock", required: false)
+</body>
+</html>

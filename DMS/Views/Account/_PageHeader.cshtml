@@ -1,0 +1,12 @@
+﻿@{
+    var pageName = ViewBag.PageName ?? string.Empty;
+    var canLogin = new string[] { "register", "forgotpassword", "lockout", "logout" }.ToList().Contains(pageName);
+}
+<div class="height-10 w-100 shadow-lg px-4 bg-brand-gradient">
+    <div class="d-flex align-items-center container p-0">
+        <partial name="_Logo" />
+        <a class="btn-link text-white ml-auto" asp-controller="Account" asp-action="Register">
+            계정 생성
+        </a>
+    </div>
+</div>
