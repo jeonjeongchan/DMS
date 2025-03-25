@@ -20,11 +20,13 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Reflection.Metadata;
 using Azure;
-
+using Microsoft.CodeAnalysis;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Reflection.Emit;
 
 namespace DMS.Controllers;
 
-
+[Route("Document")]
 public class DocumentController : Controller
 {
 
@@ -35,111 +37,138 @@ public class DocumentController : Controller
         _context = context;
     }
 
+    // 문서관리 메인 화면
     [HttpGet("/Document")]
     public async Task<IActionResult> DocumentMain()
     {
-        return View(await _context.Documents
+        var documentClasses = _context.Document_Classes
+            .ToList() // 먼저 리스트로 가져옴
+            .Select(dc => new T_Document_Class
+            {
+                SEQ = dc.SEQ,
+                P_SEQ = dc.P_SEQ,
+                NAME = dc.NAME,
+                LEVEL = dc.LEVEL,
+                ORDER = dc.ORDER,
+                DOC_COUNT = _context.Documents.Count(d => d.DOC_CLASS_SEQ == dc.SEQ), // 연결된 문서 개수 계산
+                Children = new List<T_Document_Class>() // 기본값 설정
+            })
+            .ToList();
+
+        //var documentClasses = await _context.Document_Classes.ToListAsync();
+        T_Document_Class t_doc_class = new T_Document_Class();
+        var docClassTreeMenu = t_doc_class.BuildTree(documentClasses);
+
+        ViewBag.docClasses = docClassTreeMenu;
+
+        var documents = await _context.Documents
             .Where(document => document.TYPE == "DOCUMENT")
+            //.Where(document => document.RECENT == 1) // 필요시 주석 제거
             .OrderByDescending(document => document.CREATE_DATE)
-            .ToListAsync());
+            .ToListAsync();
+
+        return View(documents);
+
     }
 
 
+
+    [HttpGet("/Document/{SEQ}")]
+    public async Task<IActionResult> GetDocument(int? SEQ)
+    {
+
+        if (SEQ == null)
+        {
+            return NotFound();
+        }
+
+        var documents = await _context.Documents.Where(o => o.DOC_CLASS_SEQ == SEQ).ToListAsync();
+
+        return Ok(documents);
+    }
+
+
+
+    // 문서관리 상세 화면
     [HttpGet("/Document/{OID}")]
     public async Task<IActionResult> GetDocumentDetail(string OID)
     {
+        //string connectionString = _context.Database.GetDbConnection().ConnectionString;
         var detail = await _context.Documents.FindAsync(OID);
-        var fileList = new List<T_File>();
-        string sql = "SELECT * FROM JJC.T_FILE WHERE SEQ = :SEQ";
-
-        if (detail.T_FILE_SEQ != null) {
-
-
-            //string connectionString = _context.Database.GetDbConnection().ConnectionString;
-            string connectionString = "Data Source=211.244.81.163:9090/ORCL; User Id=JJC; Password=Qwer1234;";
-
-
-            using (var connection = new OracleConnection(connectionString))
-            {
-                await connection.OpenAsync();
-
-                //using (var command = connection.CreateCommand())
-                using (var command = new OracleCommand(sql, connection))
-                {
-                    command.Parameters.Add(new OracleParameter("SEQ", OracleDbType.Int32) { Value = detail.T_FILE_SEQ });
-
-                    // 데이터 읽기
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            var data = new T_File
-                            {
-                                SEQ = reader.GetInt32(0), // 첫 번째 컬럼
-                                FILE_NAME = reader.GetString(1), // 두 번째 컬럼
-                                FILE_SIZE = reader.GetInt32(2), // 세 번째 컬럼
-                                FILE_PATH = reader.GetString(4)
-                            };
-                            fileList.Add(data);
-                        }
-                    }
-                }
-                detail.file_list = fileList;
-            }
-
-        }
 
         if (detail == null)
         {
             return NotFound();
         }
 
+        var fileRelList = await _context.R_File_Documents.Where(o => o.OID == OID).ToListAsync();
+
+        var fileList = new List<string>();
+
+        if (fileRelList.Count > 0)
+        {
+            for (var i = 0; i < fileRelList.Count; i++)
+            {
+                var fileInfo = await _context.Files.SingleOrDefaultAsync(o => o.SEQ == fileRelList[i].SEQ);
+                if (fileInfo != null)
+                {
+                    fileList.Add(fileInfo.FILE_NAME);
+                }
+
+            }
+            if (fileList != null)
+            {
+                detail.fileList = fileList;
+            }
+
+        }
+
         return Ok(detail);
     }
 
-
+    // 문서 등록
     [HttpPost("/Document")]
     public async Task<IActionResult> CreateDocument(T_Document document)
     {
         if (ModelState.IsValid)
         {
-
             document.OID = Encryption.CreateRandomKey();
             document.TYPE = "DOCUMENT";
+            document.CREATE_USER = HttpContext.Session.GetString("Username");
             document.CREATE_DATE = DateTime.Now;
             document.STATE = "작성중";
             document.REVISION = 0;
+            document.RECENT = 1;
             document.USEFLAG = '1';
 
+            var filelist = new List<T_File>();
 
-            if (document.T_File != null)
+            if (document.T_FILE_LIST != null)
             {
-                if (document.T_File.Length == 0)
+                for (var i = 0; i < document.T_FILE_LIST.Count; i++)
                 {
-                    return BadRequest(new { Message = "용량이 빈파일은 등록할수 없습니다." });
+                    if (document.T_FILE_LIST[i].Length == 0)
+                    {
+                        return BadRequest(new { Message = "용량이 빈파일은 등록할수 없습니다." });
+                    }
                 }
-                else
-                {
-                    //DateTime dateTime = DateTime.UtcNow;
-                    //long timestamp = ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
 
-                    //var fileName = Path.GetFileNameWithoutExtension(document.T_File.FileName);
-                    //fileName = fileName + "_" + timestamp;
-                    //fileName = fileName + Path.GetExtension(document.T_File.FileName);
-                    
-                    var fileName = Path.GetFileName(document.T_File.FileName);
+                for (var i = 0; i < document.T_FILE_LIST.Count; i++)
+                {
+                    var fileName = Path.GetFileName(document.T_FILE_LIST[i].FileName);
                     var uploadPath = Path.Combine("wwwroot", "uploads", fileName);
 
                     using (var stream = new FileStream(uploadPath, FileMode.Create))
                     {
-                        await document.T_File.CopyToAsync(stream);
+                        await document.T_FILE_LIST[i].CopyToAsync(stream);
                     }
 
                     var fileData = new T_File
                     {
                         FILE_NAME = fileName,
                         FILE_PATH = uploadPath,
-                        FILE_SIZE = document.T_File.Length
+                        FILE_SIZE = document.T_FILE_LIST[i].Length,
+                        CREATE_DATE = DateTime.Now
 
                     };
 
@@ -153,16 +182,23 @@ public class DocumentController : Controller
                             var result = await command.ExecuteScalarAsync();
                             int sequenceValue = Convert.ToInt32(result);
                             fileData.SEQ = sequenceValue;
-                            document.T_FILE_SEQ = sequenceValue;
+
+                            var file_document = new R_File_Document
+                            {
+                                T_File = fileData,
+                                T_Document = document,
+                            };
+
+                            _context.R_File_Documents.Add(file_document);
 
                         }
                     }
-
-                    _context.Files.Add(fileData);
+                    filelist.Add(fileData);
+                    
 
                 }
 
-
+                _context.Files.AddRange(filelist);
             }
 
             _context.Objects.Add(document);
@@ -190,58 +226,63 @@ public class DocumentController : Controller
         return BadRequest(new { success = false });
     }
 
-
+    // 문서 수정
     [HttpPut("/Document/{OID}")]
-    public async Task<IActionResult> PutDocument(string OID, T_Document document)
+    public async Task<IActionResult> PutDocument(string OID, T_Document updateDocument)
     {
-        if (OID != document.OID)
+        if (OID != updateDocument.OID)
         {
             return BadRequest();
         }
-        _context.Entry(document).State = EntityState.Modified;
-
+        
         try
         {
+            var document = await _context.Documents.FindAsync(OID);
 
-            document.TYPE = "DOCUMENT";
-            document.MODIFY_DATE = DateTime.Now;
-            document.STATE = "작성중";
-            document.REVISION = 0;
-            document.USEFLAG = '1';
+            var relFileDocument = await _context.Documents
+                .Where(d => d.OID == OID)
+                .Include(d => d.R_FILE_DOCUMENT)
+                .ToListAsync();
 
-            if (document.T_File != null)
+            if ((updateDocument.T_FILE_LIST.Count + relFileDocument[0].R_FILE_DOCUMENT.Count) > 5)
             {
-                if (document.T_File.Length == 0)
-                {
-                    return BadRequest(new { Message = "용량이 빈파일은 등록할수 없습니다." });
-                }
-                else
-                {
-                    //DateTime dateTime = DateTime.UtcNow;
-                    //long timestamp = ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
+                return BadRequest(new { message = "파일 첨부 개수는 최대 5개까지 가능합니다." });
+            }
 
-                    //var fileName = Path.GetFileNameWithoutExtension(document.T_File.FileName);
-                    //fileName = fileName + "_" + timestamp;
-                    //fileName = fileName + Path.GetExtension(document.T_File.FileName);
+            _context.Entry(document).State = EntityState.Modified;
 
-                    var fileName = Path.GetFileName(document.T_File.FileName);
+            document.TITLE = updateDocument.TITLE;
+            document.CONTENT = updateDocument.CONTENT;
+            document.MODIFY_DATE = DateTime.Now;
+            document.MODIFY_USER = HttpContext.Session.GetString("Username");
+
+
+            if (updateDocument.T_FILE_LIST != null)
+            {
+
+                for (var i = 0; i < updateDocument.T_FILE_LIST.Count; i++)
+                {
+                    var fileName = Path.GetFileName(updateDocument.T_FILE_LIST[i].FileName);
                     var uploadPath = Path.Combine("wwwroot", "uploads", fileName);
 
                     using (var stream = new FileStream(uploadPath, FileMode.Create))
                     {
-                        await document.T_File.CopyToAsync(stream);
+                        await updateDocument.T_FILE_LIST[i].CopyToAsync(stream);
                     }
 
                     var fileData = new T_File
                     {
                         FILE_NAME = fileName,
                         FILE_PATH = uploadPath,
-                        FILE_SIZE = document.T_File.Length,
+                        FILE_SIZE = updateDocument.T_FILE_LIST[i].Length,
                         CREATE_DATE = DateTime.Now
 
-                };
+                    };
 
-                    using (var connection = new OracleConnection(_context.Database.GetDbConnection().ConnectionString))
+                    // DB 접속
+                    var connectionOracle = "Data Source=localhost:1521/FREEPDB1;User Id=JJC;Password=Qwer1234;";
+                    using (var connection = new OracleConnection(connectionOracle))
+                    //using (var connection = new OracleConnection(_context.Database.GetDbConnection().ConnectionString))
                     {
                         await connection.OpenAsync();
 
@@ -251,13 +292,17 @@ public class DocumentController : Controller
                             var result = await command.ExecuteScalarAsync();
                             int sequenceValue = Convert.ToInt32(result);
                             fileData.SEQ = sequenceValue;
-                            document.T_FILE_SEQ = sequenceValue;
 
+                            var file_document = new R_File_Document
+                            {
+                                T_File = fileData,
+                                T_Document = document,
+                            };
+
+                            _context.R_File_Documents.Add(file_document);
                         }
                     }
-
                     _context.Files.Add(fileData);
-
                 }
 
 
@@ -280,6 +325,8 @@ public class DocumentController : Controller
         return Ok(new { message = "문서 편집 완료" });
     }
 
+
+    // 문서 삭제
     [HttpDelete("/Document/Delete")]
     public async Task<IActionResult> DeleteDocument([FromBody] Common common)
     {
@@ -292,16 +339,44 @@ public class DocumentController : Controller
         {
             var documentsToDelete = await _context.Documents
                 .Where(d => common.OIDs.Contains(d.OID))
+                .Include(d => d.R_FILE_DOCUMENT)
                 .ToListAsync();
 
             if (documentsToDelete.Count == 0)
             {
-                return NotFound("No matching items found.");
+                return BadRequest("데이터가 변경되어 없는 문서 입니다.");
+            } 
+
+
+            for (var i = 0; i < documentsToDelete.Count; i++)
+            {
+                if (documentsToDelete[i].RECENT == 0)
+                {
+                    return BadRequest("최신 문서만 삭제 할수있습니다.");
+                }
+                else
+                {
+                    var prevDocument = await _context.Documents.FindAsync(documentsToDelete[i].PREVOID);
+                    if (prevDocument != null)
+                    {
+                        prevDocument.RECENT = 1;
+                        //_context.Entry(prevDocument).Property(x => x.RECENT).IsModified = true;
+                        _context.Entry(prevDocument).State = EntityState.Modified;          
+                    }
+
+                }
+                
+                for (var j = 0; j < documentsToDelete[i].R_FILE_DOCUMENT.Count; j++)
+                {
+                    _context.R_File_Documents.RemoveRange(documentsToDelete[i].R_FILE_DOCUMENT); // 연결된 파일 삭제
+                }
             }
+           
+
 
             _context.Documents.RemoveRange(documentsToDelete);
-            await _context.SaveChangesAsync();
 
+            await _context.SaveChangesAsync();
             return Ok(new { success = true, deletedIds = common.OIDs });
         }
         catch (Exception ex)
@@ -313,13 +388,60 @@ public class DocumentController : Controller
 
     }
 
+    // 문서 개정
+    [HttpPut("/Document/Revision")]
+    public async Task<IActionResult> RevisionDocument([FromBody] T_Document document)
+    {
+        if (ModelState.IsValid)
+        {
+            // 실제 데이터에 문서가 있는지 확인
+            var documentCheck = await _context.Documents.FindAsync(document.OID);
+            if (documentCheck == null)
+            {
+                return BadRequest("데이터가 없는 문서입니다.");
+            }
 
+            // 개정 전 최신 문서 확인
+            if (documentCheck.RECENT == 0)
+            {
+                return BadRequest("이 문서는 최신문서가 아닙니다.");
+            }
+
+            // 최신 문서 변경
+            documentCheck.RECENT = 0;
+            _context.Entry(documentCheck).State = EntityState.Modified;
+            
+
+            // 개정된 문서 등록
+            T_Document recentDocument = new T_Document();
+            recentDocument.OID = Encryption.CreateRandomKey();
+            recentDocument.TITLE = documentCheck.TITLE;
+            recentDocument.CONTENT = documentCheck.CONTENT;
+            recentDocument.TYPE = "DOCUMENT";
+            recentDocument.CREATE_USER = HttpContext.Session.GetString("Username");
+            recentDocument.CREATE_DATE = DateTime.Now;
+            recentDocument.STATE = "작성중";
+            recentDocument.REVISION = documentCheck.REVISION + 1;
+            recentDocument.RECENT = 1;
+            recentDocument.USEFLAG = '1';
+            recentDocument.PREVOID = documentCheck.OID;
+
+            _context.Objects.Add(recentDocument);
+            _context.Documents.Add(recentDocument);
+
+            await _context.SaveChangesAsync();
+
+
+        }
+
+        return Ok(new { success = true }); 
+    }
+
+    // 에러
     private bool DocumentExists(string OID)
     {
         return _context.Documents.Any(e => e.OID == OID);
     }
-
-
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()

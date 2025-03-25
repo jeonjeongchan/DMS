@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DMS.Models
@@ -22,7 +23,10 @@ namespace DMS.Models
         public DateTime? CREATE_DATE { get; set; }
         public string? DESCRIPTION { get; set; }
         public char? REPRESENT_FILE { get; set; }
-       
+
+
+        [JsonIgnore]
+        public ICollection<R_File_Document?>? R_FILE_DOCUMENT { get; set; }
     }
 
 }

@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DMS.Controllers;
 
+//[Route("Main")]
 public class MainController : Controller
 {
     private readonly ILogger<MainController> _logger;
@@ -21,10 +22,16 @@ public class MainController : Controller
         _logger = logger;
     }
 
-    [HttpGet("/")]
+    //[HttpGet("/")]
     public IActionResult DashBoard()
     {
+        var username = HttpContext.Session.GetString("Username");
+        if (string.IsNullOrEmpty(username))
+        {
+            return RedirectToAction("Login", "Account");
+        }
 
+        ViewData["Username"] = username;
         return View();
     }
 

@@ -22,6 +22,7 @@ namespace DMS.Models
         public string? PREVOID { get; set; }
         public string? STATE { get; set; }
         public string? CREATE_USER { get; set; }
+        public int? RECENT { get; set; }
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime? CREATE_DATE { get; set; }
         public string? MODIFY_USER { get; set; }

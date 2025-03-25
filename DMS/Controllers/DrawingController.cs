@@ -18,10 +18,8 @@ using Oracle.ManagedDataAccess.Client;
 
 namespace DMS.Controllers;
 
-
 public class DrawingController : Controller
 {
-
     private readonly ApplicationDbContext _context;
 
     public DrawingController(ApplicationDbContext context)
@@ -61,8 +59,6 @@ public class DrawingController : Controller
         return Ok(detail);
     }
 
-
-
     //[HttpPost("Drawing")]
     //public async Task<IActionResult> CreateDrawing([FromBody] Drawing drawing)
     //{
@@ -82,7 +78,6 @@ public class DrawingController : Controller
     {
         if (ModelState.IsValid)
         {
-            
             drawing.OID = Encryption.CreateRandomKey();
             drawing.TYPE = "DRAWING";
             drawing.CREATE_DATE = DateTime.Now;
@@ -92,6 +87,7 @@ public class DrawingController : Controller
 
             _context.Objects.Add(drawing);
             _context.Drawings.Add(drawing);
+
             if (drawing.T_File != null)
             {
                 if (drawing.T_File.Length == 0)
@@ -107,7 +103,6 @@ public class DrawingController : Controller
                     {
                         await drawing.T_File.CopyToAsync(stream);
                     }
-
 
                     var fileData = new T_File
                     {
@@ -127,17 +122,10 @@ public class DrawingController : Controller
                             var result = await command.ExecuteScalarAsync();
                             int sequenceValue = Convert.ToInt32(result);
                             fileData.SEQ = sequenceValue;
-
-
                         }
                     }
-
-
                     _context.Files.Add(fileData);
-
                 }
-
-
             }
 
             try
@@ -149,8 +137,6 @@ public class DrawingController : Controller
                 Console.WriteLine($"Database Error: {dbEx.InnerException?.Message}");
                 return StatusCode(500, "Database error occurred");
             }
-            // 처리 로직
-            //return Json(new { success = true, message = "File uploaded successfully" });
             return Ok(new { message = "도면 등록 완료" });
         }
         else
@@ -221,17 +207,12 @@ public class DrawingController : Controller
             return StatusCode(500, "Internal server error: " + ex.Message);
         }
 
-
-
     }
-
 
     private bool DrawingExists(string OID)
     {
         return _context.Drawings.Any(e => e.OID == OID);
     }
-
-
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()

@@ -4,11 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace DMS.Models
 {
     public class T_Document : T_Object {
 
+        public int? DOC_CLASS_SEQ { get; set; }
         //[Key]
         //public string? OID { get; set; }
         //public string? TYPE { get; set; }
@@ -35,13 +37,27 @@ namespace DMS.Models
         //public char? USEFLAG { get; set; }
 
 
-        public int? T_FILE_SEQ { get; set; }
+        //public int? T_FILE_SEQ { get; set; }
 
-        [NotMapped]
-        public IFormFile? T_File { get; set; }
+        //[NotMapped]
+        //public IFormFile? T_File { get; set; }
 
         [NotMapped]
         public List<T_File?>? file_list { get; set; }
+
+        [NotMapped]
+        public List<T_File?>? Files { get; set; }
+
+        [NotMapped]
+        public List<string?>? fileList { get; set; }
+
+        [NotMapped]
+        public List<IFormFile?>? T_FILE_LIST { get; set; }
+
+        [JsonIgnore]
+        public ICollection<R_File_Document?>? R_FILE_DOCUMENT { get; set; }
+
+
     }
 
 

@@ -1,16 +1,26 @@
-@model IEnumerable<DMS.Models.T_Document>
+@using Microsoft.AspNetCore.Http
+@using DMS.Models
+@{
+    var username = Context.Session.GetString("Username");
+}
+@model IEnumerable<T_Document>
 @{
     ViewData["Title"] = "메인화면";
     ViewData["PageName"] = "document_main";
     ViewData["Category1"] = "문서관리";
     ViewData["Heading"] = "<i class='subheader-icon fal fa-chart-area'></i> Marketing <span class='fw-300'>문서관리</span>";
-
+    ViewData["UserName"] = username;
+    var docClasses = ViewBag.docClass as List<T_Document_Class>;
 }
+
+
 
 @section HeadBlock {
     <link rel="stylesheet" media="screen, print" href="~/css/datagrid/datatables/datatables.bundle.css">
     <link rel="stylesheet" media="screen, print" href="~/css/theme-demo.css">
     <link rel="stylesheet" media="screen, print" href="~/css/formplugins/dropzone/dropzone.css">
+    <link rel="stylesheet" media="screen, print" href="~/css/fa-solid.css">
+    <link rel="stylesheet" media="screen, print" href="~/css/fa-brands.css">
 }
 
 @{
@@ -18,7 +28,68 @@
 }
 
 <div class="row">
-    <div class="col-lg-12">
+    <div class="col-lg-2">
+        <div id="panel-2" class="panel">
+
+            <ul>
+                @foreach (var item in ViewBag.docClasses)
+                {
+                    <li>
+                        <i class="fas fa-file"></i> @item.NAME (@item.DOC_COUNT)
+
+                        @if (item.Children.Count > 0)
+                        {
+                            <ul>
+                                @foreach (var child in item.Children)
+                                {
+                                    <li><i class="fas fa-file"></i> @child.NAME (@child.DOC_COUNT)</li>
+                                }
+                            </ul>
+                        }
+                    </li>
+                }
+            </ul>
+
+
+
+            @*<div class="flex-1 pr-3">
+            <a href="/page/inboxgeneral" class="dropdown-item px-3 px-sm-4 pr-lg-3 pl-lg-5 py-2 fs-md font-weight-bold d-flex justify-content-between rounded-pill border-top-left-radius-0 border-bottom-left-radius-0 @(ViewBag.PageName == "page_inbox_general" ? "active" : "")">
+                <div>
+                    <i class="fas fa-folder-open width-1"></i>Inbox
+                </div>
+                <div class="fw-400 fs-xs js-unread-emails-count"></div>
+            </a>
+            <a href="javascript:void(0)" class="dropdown-item px-3 px-sm-4 pr-lg-3 pl-lg-5 py-2 fs-md d-flex justify-content-between rounded-pill border-top-left-radius-0 border-bottom-left-radius-0">
+                <div>
+                    <i class="fas fa-star width-1"></i>Starred
+                </div>
+                <div class="fw-400 fs-xs">(6)</div>
+            </a>
+            <a href="javascript:void(0)" class="dropdown-item px-3 px-sm-4 pr-lg-3 pl-lg-5 py-2 fs-md d-flex justify-content-between rounded-pill border-top-left-radius-0 border-bottom-left-radius-0">
+                <div>
+                    <i class="fas fa-edit width-1"></i>Draft
+                </div>
+                <div class="fw-400 fs-xs">(5)</div>
+            </a>
+            <a href="javascript:void(0)" class="dropdown-item px-3 px-sm-4 pr-lg-3 pl-lg-5 py-2 fs-md d-flex justify-content-between rounded-pill border-top-left-radius-0 border-bottom-left-radius-0">
+                <div>
+                    <i class="fas fa-paper-plane width-1"></i>Sent
+                </div>
+            </a>
+            <a href="javascript:void(0)" class="dropdown-item px-3 px-sm-4 pr-lg-3 pl-lg-5 py-2 fs-md d-flex justify-content-between rounded-pill border-top-left-radius-0 border-bottom-left-radius-0">
+                <div>
+                    <i class="fas fa-exclamation-triangle width-1"></i>Spam
+                </div>
+            </a>
+            <a href="javascript:void(0)" class="dropdown-item px-3 px-sm-4 pr-lg-3 pl-lg-5 py-2 fs-md font-weight-bold d-flex justify-content-between rounded-pill border-top-left-radius-0 border-bottom-left-radius-0">
+                <div>
+                    <i class="fas fa-trash width-1"></i>Trash
+                </div>
+            </a>
+        </div>*@
+        </div>
+    </div>
+    <div class="col-lg-10">
         <div id="panel-2" class="panel">
             <div class="panel-container show">
                 <div class="panel-content">
@@ -26,51 +97,56 @@
                         <button type="button" id="documentCreate" class="btn btn-primary" data-toggle="modal" data-target="#documentFormModal">등록</button>
                         <button type="button" id="documentEdit" class="btn btn-warning" data-toggle="modal">수정</button>
                         <button type="button" id="documentDelete" class="btn btn-danger" data-toggle="modal">삭제</button>
+                        <button type="button" id="documentRevision" class="btn btn-secondary" data-toggle="modal">개정</button>
                     </div>
                     <table id="DocumentMainTable" class="table table-bordered table-hover table-striped w-100">
                         <thead class="bg-warning-200">
                             <tr>
                                 <th>번호</th>
-                                <th>문서이름</th>
+                                <th>문서제목</th>
                                 <th>리비전</th>
                                 <th>상태</th>
                                 <th>작성자</th>
                                 <th>작성일</th>
                                 <th>수정자</th>
                                 <th>수정일</th>
+                                <th>최신문서</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model)
+                            @foreach (var doc in Model)
                             {
-                                <tr data-oid="@item.OID" ondblclick="DocumentDetail(this)">
+                                <tr data-oid="@doc.OID" ondblclick="DocumentDetail(this)">
                                     <td>
                                         @index
                                     </td>
                                     <td>
-                                        @Html.DisplayFor(modelItem => item.TITLE)
+                                        @Html.DisplayFor(modelItem => doc.TITLE)
                                     </td>
                                     <td>
-                                        @Html.DisplayFor(modelItem => item.REVISION)
+                                        @Html.DisplayFor(modelItem => doc.REVISION)
                                     </td>
                                     <td>
-                                        @Html.DisplayFor(modelItem => item.STATE)
+                                        @Html.DisplayFor(modelItem => doc.STATE)
                                     </td>
                                     <td>
-                                        @Html.DisplayFor(modelItem => item.CREATE_USER)
+                                        @Html.DisplayFor(modelItem => doc.CREATE_USER)
                                     </td>
                                     <td>
-                                        @Html.DisplayFor(modelItem => item.CREATE_DATE)
+                                        @Html.DisplayFor(modelItem => doc.CREATE_DATE)
                                     </td>
                                     <td>
-                                        @Html.DisplayFor(modelItem => item.MODIFY_USER)
+                                        @Html.DisplayFor(modelItem => doc.MODIFY_USER)
                                     </td>
                                     <td>
-                                        @Html.DisplayFor(modelItem => item.MODIFY_DATE)
+                                        @Html.DisplayFor(modelItem => doc.MODIFY_DATE)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => doc.RECENT)
                                     </td>
                                 </tr>
-                                    index++;
-                                }
+                                index++;
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -93,6 +169,7 @@
             </div>
             <div class="modal-body">
                 <form id="documentForm">
+                    @*<div class="alert alert-primary text-dark"></div>*@
                     <div class="form-group">
                         <label class="form-label" for="title">문서제목</label>
                         <input type="text" id="title" class="form-control" placeholder="">
@@ -125,21 +202,22 @@
                         <label class="form-label" for="example-number">리비전</label>
                         <input class="form-control" id="revision" type="number" name="number" value="" readonly="readonly">
                     </div>
-                    <div id="fileSelect" class="form-group mb-0">
-                        <label class="form-label">파일 등록</label>
-                        <div class="custom-file">
-                            <input type="file" class="custom-file-input" id="documentFile">
-                            <label class="custom-file-label" for="documentFile">파일 선택</label>
-                        </div>
-                    </div>
                     <div id="fileDownload" class="form-group">
-                        <label class="form-label" for="file">첨부 파일</label>
-                        <input type="text"  readonly="" class="form-control-plaintext" id="file" value="">
+                        @*<label id="fileDownloadList" class="form-label" for="file">첨부 파일</label>
+                            <input type="file" readonly="" class="form-control-plaintext" id="file" value="">*@
+                    </div>
+                    <div id="fileUpload" class="form-group">
+                        <label class="form-label">파일 등록</label>
+                        <div class="dropzone" id="documentDropzone">
+                            <div class="dz-message needsclick">
+                                파일을 이곳에 드래그하거나 클릭하여 업로드하세요.
+                            </div>
+                        </div>
                     </div>
                     <div class="panel-content border-faded border-left-0 border-right-0 border-bottom-0 d-flex flex-row">
                         <button id="documentCreateSubmit" class="btn btn-primary ml-auto">등록</button>
                         <button id="documentEditSubmit" class="btn btn-primary ml-auto">수정</button>
-                    </div>  
+                    </div>
                 </form>
             </div>
         </div>
@@ -148,18 +226,66 @@
 
 
 @section ScriptsBlock {
-    <script type="text/javascript">/* Activate smart panels */
-        $('#js-page-content').smartPanel();</script>
+    <script type="text/javascript">$('#js-page-content').smartPanel();</script>
     <script src="~/js/statistics/peity/peity.bundle.js"></script>
     <script src="~/js/statistics/flot/flot.bundle.js"></script>
     <script src="~/js/statistics/easypiechart/easypiechart.bundle.js"></script>
     <script src="~/js/datagrid/datatables/datatables.bundle.js"></script>
     <script src="~/js/formplugins/dropzone/dropzone.js"></script>
-    <script>
+    <script>// 드롭존 (첨부파일)
+        Dropzone.autoDiscover = false;
+        const documentDropzone = new Dropzone("#documentDropzone", {
+            url: "#",  // 서버 업로드 경로
+            autoProcessQueue: false,  // 자동 업로드 방지
+            maxFiles: 5,  // 업로드할 최대 파일 개수
+            maxFilesize: 20,  // 파일 크기 제한 (MB)
+            acceptedFiles: null, // 허용할 파일 유형
+            addRemoveLinks: true,  // 파일 삭제 버튼 추가
+            dictDefaultMessage: "여기에 파일을 드래그하거나 클릭하여 업로드하세요.",
+            dictRemoveFile: "파일 삭제",
+            dictMaxFilesExceeded: "최대 5개의 파일만 업로드할 수 있습니다.",
+            init: function () {
+                this.on("addedfile", function (file) {
+                    if (this.files.length > 5) {
+                        this.removeFile(file); // 초과된 파일 삭제
+                        alert("최대 5개의 파일만 업로드할 수 있습니다.");
+                    }
+                });
+            }
+
+        });
+
+        //function toggleFiles() {
+        //    $("#fileContainer").toggle(); // jQuery의 toggle() 함수 사용하여 보이기/숨기기 전환
+        //}
 
         function downloadFile(fileName) {
-            const url = `/files/download?fileName=${encodeURIComponent(fileName)}`;
+            const url = `/File/${encodeURIComponent(fileName)}`;
             window.location.href = url;
+        }
+
+        function fileRemove(seq) {
+            if (!confirm("정말로 삭제하시겠습니까?")) {
+                return; // 사용자가 취소하면 함수 종료
+            }
+
+            fetch(`/file/${seq}`, {
+                method: "DELETE"
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("파일 삭제 실패");
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    alert(data); // 삭제 성공 메시지 출력
+                    location.reload(); // 페이지 새로고침 (삭제된 파일 반영)
+                })
+                .catch(error => {
+                    console.error("삭제 오류:", error);
+                    alert("파일 삭제 중 오류가 발생했습니다.");
+                });
         }
 
 
@@ -192,6 +318,33 @@
         }
 
 
+        function isValidForm() {
+            // 빈 칸 체크
+            if ($('#title').val() === '') {
+                alert('제목을 입력해주세요');
+                return false;
+            }
+
+            if ($('#content').val() === '') {
+                alert('내용을 입력해주세요');
+                return false;
+            }
+
+            // 글자수 체크 (예시로 제목, 내용 글자수 제한)
+            if ($('#title').val().length > 100) {
+                alert('문서 제목은 100자 이하로 입력해주세요.');
+                return false;
+            }
+
+            if ($('#content').val().length > 500) {
+                alert('내용은 500자 이하로 입력해주세요.');
+                return false;
+            }
+
+            return true; // 유효성 통과하면 true 반환
+        }
+
+
         // 문서상세
         function DocumentDetail(row) {
 
@@ -201,7 +354,7 @@
             $('#documentFormModalLabel').text('문서상세');
             $('input').prop('readonly', true);
             $('textarea').prop('readonly', true);
-            $('#fileSelect').hide();
+            $('#fileUpload').hide();
             $('#documentCreateSubmit').hide();
             $('#documentEditSubmit').hide();
             $('#fileDownload').show();
@@ -232,16 +385,23 @@
                     $('#revision').val(data.revision);
                     $('#state').val(data.state);
 
-                    if (data.file_list != null) {
-                        $('#file').val(data.file_list[0].filE_NAME);
-                        var fileUrlParameter = data.file_list[0].filE_NAME;
-                        var fileUrl = "downloadFile(\'" + fileUrlParameter + "\')";
-                        $('#file').attr("ondblclick", fileUrl);
-                        $('#file').attr("seq", data.t_FILE_SEQ);
-  
-                    }
+                    const fileList = $("#fileDownload");
+                    const fileLabelName = `<label class="form-label" for="file">첨부 파일</label>`;
+                    fileList.html(fileLabelName);
 
-    
+                    //파일 목록을 동적으로 추가
+                    data.fileList.$values.forEach((i, index) => {
+                        const fileHtml = `
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                     <input type="text" readonly="" class="form-control-plaintext" value="${i}" readonly />
+                                     <input type="button" value="다운로드" onclick="downloadFile('${i}')" />
+                                    </div>
+                                `;
+
+                        fileList.append(fileHtml);
+                    });
+
+
                 },
                 error: function (xhr, status, error) {
                     console.log('Error:', error);
@@ -253,6 +413,7 @@
         $(document).ready(function () {
 
             var documentId = null;
+
 
             // 문서편집
             $('#documentEdit').on('click', function () {
@@ -271,7 +432,7 @@
 
                     $('#documentFormModalLabel').text('문서편집');
                     $('#documentForm input').removeAttr('readonly');
-                    $('#fileSelect').show();
+                    $('#fileUpload').show();
                     $('#fileDownload').show();
                     $('#documentForm textarea').removeAttr('readonly');
                     $('#create_user').attr('readonly', 'readonly');
@@ -283,13 +444,11 @@
                     $('#documentCreateSubmit').hide();
                     $('#documentEditSubmit').show();
 
-                    
-
                     $.ajax({
                         url: '/Document/' + documentId,
                         type: 'GET',
                         success: function (data) {
-                            debugger;
+
                             $('#documentFormModal').modal('show');
                             $('#title').val(data.title);
                             $('#content').val(data.content);
@@ -311,12 +470,30 @@
                             $('#revision').val(data.revision);
                             $('#state').val(data.state);
 
-                            if (data.file_list[0] != null) {
-                                $('#file').val(data.file_list[0].filE_NAME);
-                                var fileUrlParameter = data.file_list[0].filE_NAME;
-                                var fileUrl = "downloadFile(\'" + fileUrlParameter + "\')";
-                                $('#file').attr("ondblclick", fileUrl);
-                                $('#file').attr("seq", data.t_FILE_SEQ);
+
+                            const fileList = $("#fileDownload");
+                            const fileLabelName = `<label class="form-label" for="file">첨부 파일</label>`;
+
+
+                            fileList.html(fileLabelName);
+                            //if (data.r_FILE_DOCUMENT.$values.length > 0) {
+                            //    const toggleButtonHtml = '<button id="toggleFileList" onclick="toggleFiles()">파일 보이기/숨기기</button>';
+                            //    fileList.append(toggleButtonHtml); // 라벨 바로 아래에 버튼을 추가
+                            //}
+
+
+                            for (var i = 0; i < data.r_FILE_DOCUMENT.$values.length; i++) {
+
+                                var seq = data.r_FILE_DOCUMENT.$values[i].seq;
+                                var fileName = data.r_FILE_DOCUMENT.$values[i].t_File.filE_NAME;
+
+                                const fileHtml = `
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <input type="text" readonly="" class="form-control-plaintext" value="${fileName}" readonly />
+                                                <input type="button" value="삭제" onclick="fileRemove('${seq}')" />
+                                            </div>
+                                        `;
+                                fileList.append(fileHtml);
                             }
 
 
@@ -369,6 +546,7 @@
 
             // 문서등록
             $('#documentCreate').on('click', function () {
+
                 documentId = null;
                 $('#documentForm')[0].reset();
                 $('#documentFormModalLabel').text('문서등록');
@@ -380,7 +558,7 @@
                 $('#revision').attr('readonly', 'readonly');
                 $('#create_user').attr('readonly', 'readonly');
                 $('#modify_user').attr('readonly', 'readonly');
-                $('#fileSelect').show();
+                $('#fileUpload').show();
                 $('#documentCreateSubmit').show();
                 $('#documentEditSubmit').hide();
                 $('#fileDownload').hide();
@@ -388,6 +566,7 @@
                     $("#DocumentMainTable tr").removeClass('selected');
                 }
                 $('#create_date').val(createFormDateChange(null));
+
             });
 
 
@@ -395,7 +574,7 @@
             $('#documentCreateSubmit').on("click", async function () {
                 event.preventDefault();
                 if (confirm("등록 하시겠습니까?")) {
-                    debugger;
+
                     var formData = new FormData();
                     var method = 'POST';
                     var urlMethod = '/Document';
@@ -403,10 +582,11 @@
                     formData.append("TITLE", $('#title').val());
                     formData.append("CONTENT", $('#content').val());
 
-                    var fileFormData = $("#documentFile")[0].files[0];
-                    if (fileFormData) {
-                        formData.append("T_File", fileFormData);
-                    }
+
+                    documentDropzone.files.forEach(function (file) {
+                        formData.append("T_FILE_LIST", file);  // 각 파일을 FormData에 추가
+                    });
+
 
                     const response = await fetch(urlMethod, {
                         method: method,
@@ -419,13 +599,14 @@
                             return response.json();
                         })
                         .then(data => {
-                            alert("Success: " + data.message);
+                            alert(data.message);
                             window.location.href = '/Document';
                         })
                         .catch(error => {
                             console.error("Error:", error);
                             alert("Error: " + error.message);
                         });
+
                 }
 
             });
@@ -433,53 +614,97 @@
             // 문서편집 완료
             $('#documentEditSubmit').on('click', async function () {
                 event.preventDefault();
-                debugger;
-                if (confirm("수정 하시겠습니까?")) {
-                    var method = 'PUT';
-                    var urlMethod = '/Document/' + documentId;
+                if (isValidForm()) {
 
-                    var create_dateChange = dateChange($('#create_date').val());
-                    var modifyDateChange = modifyDateChange = new Date();
+                    if (confirm("수정 하시겠습니까?")) {
+                        var method = 'PUT';
+                        var urlMethod = '/Document/' + documentId;
 
-                    var formData = new FormData();
+                        var modifyDateChange = modifyDateChange = new Date();
 
-                    formData.append("OID", documentId);
-                    formData.append("TYPE", "DOCUMENT");
-                    formData.append("TITLE", $('#title').val());
-                    formData.append("CONTENT", $('#content').val());
-                    formData.append("CREATE_USER", $('#create_user').val());
-                    formData.append("CREATE_DATE", create_dateChange);
-                    formData.append("T_FILE_SEQ", $("#file").attr("seq"));
+                        var formData = new FormData();
 
-                    var fileFormData = $("#documentFile")[0].files[0];
-                    if (fileFormData) {
-                        formData.append("T_File", fileFormData);
-                    }
+                        formData.append("OID", documentId);
+                        formData.append("TITLE", $('#title').val());
+                        formData.append("CONTENT", $('#content').val());
 
 
-                    const response = await fetch(urlMethod, {
-                        method: method,
-                        body: formData
-                    })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error("문제가 발생하였습니다. 관리자에게 문의하세요.");
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            alert("Success: " + data.message);
-                            window.location.href = '/Document';
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            alert("Error: " + error.message);
+                        documentDropzone.files.forEach(function (file) {
+                            formData.append("T_FILE_LIST", file);  // 각 파일을 FormData에 추가
                         });
+
+
+                        const response = await fetch(urlMethod, {
+                            method: method,
+                            body: formData
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    return response.json().then(errorData => {
+                                        throw new Error(errorData.message || "문제가 발생하였습니다. 관리자에게 문의하세요.");
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                alert(data.message);
+                                window.location.href = '/Document';
+                            })
+                            .catch(error => {
+                                alert(error.message);
+                            });
+                    }
+                }
+            });
+
+
+
+
+            // 문서 개정
+            $('#documentRevision').on('click', function () {
+                var selectedOids = [];
+                documentId = null;
+                var count = $("#DocumentMainTable tr").filter(function () {
+                    return $(this).hasClass('selected');
+                }).length;
+
+                if (count > 1) {
+                    alert("문서 하나만 선택해주세요.");
+                } else if (count == 0) {
+                    alert("문서 하나를 선택해주세요.");
+                } else {
+                    if (confirm("개정 하시겠습니까?")) {
+                        event.preventDefault();
+                        documentId = $("tbody tr.selected").data("oid");
+
+                        var updatedData = {
+                            OID: documentId,
+                        };
+
+                        $.ajax({
+                            url: '/Document/Revision',
+                            type: 'PUT',
+                            contentType: "application/json",
+                            data: JSON.stringify(updatedData),
+                            success: function (data) {
+                                alert("개정 완료");
+                                window.location.href = '/Document';
+                            },
+                            error: function (xhr, status, error) {
+                                console.log('Error:', error);
+                            }
+                        });
+
+                    }
                 }
 
             });
 
+
+
+
         });
+
 
         $('#DocumentMainTable').dataTable({
             responsive: true,

@@ -1,0 +1,77 @@
+﻿
+@using Microsoft.AspNetCore.Http
+@{
+    var username = Context.Session.GetString("Username");
+    var userId = Context.Session.GetString("UserId");
+    var userOID = Context.Session.GetString("OID");
+}
+
+<!-- 문서모달 -->
+<div class="modal fade" id="myInfoFormModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="myInfoFormModalLabel">내 정보</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="myInfoForm" asp-action="">
+                    <div class="form-group">
+                        <label class="form-label" for="MEMBER_ID">아이디</label>
+                        <input id="myInfoID" type="text" class="form-control" value="" placeholder="">
+                    </div>
+                    @*<div class="form-group">
+                        <label class="form-label" asp-for="NAME">이름</label>
+                        <input id="myInfoName" type="text" asp-for="NAME" class="form-control" placeholder="이름" value="" required="required" />
+                        <span class="invalid-feedback" asp-validation-for="NAME">이름을 입력해주세요.</span>
+                    </div>*@
+                    <div class="form-group">
+                        <label class="form-label" for="NAME">이름</label>
+                        <input id="myInfoName" type="text" class="form-control" value="" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="BIRTH_DATE">생년월일</label>
+                        <input id="myInfoBirthDate" type="date" class="form-control" value="" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="RESIGN_DATE">입사일</label>
+                        <input id="myInfoResignDate" type="date" class="form-control" value="" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="GENDER">성별</label>
+                        <select id="myInfoGender" class="custom-select form-control">
+                            <option value="남자">남자</option>
+                            <option value="여자">여자</option>
+                        </select>
+                    </div>
+                    @*<div id="myInfoPasswordDiv" class="form-group">
+                <label class="form-label" for="PASSWORD">비밀번호변경</label>
+                <input id="myInfoPassword" type="password" class="form-control" value="" placeholder="">
+            </div>*@
+                    <div class="panel-content border-faded border-left-0 border-right-0 border-bottom-0 d-flex flex-row">
+                        <button id="myInfoEdit" class="btn btn-primary">수정</button>
+                        <button id="myInfoCancel" class="btn btn-primary">취소</button>
+                        <button id="myInfoSubmit" class="btn btn-primary">완료</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
