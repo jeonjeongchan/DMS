@@ -35,14 +35,18 @@
                 @foreach (var item in ViewBag.docClasses)
                 {
                     <li>
-                        <i class="fas fa-file"></i> @item.NAME (@item.DOC_COUNT)
+                        <i class="fas fa-file"></i>
+                        <a href="/Document/DocClass/@item.SEQ">@item.NAME (@item.DOC_COUNT)</a>
 
                         @if (item.Children.Count > 0)
                         {
                             <ul>
                                 @foreach (var child in item.Children)
                                 {
-                                    <li><i class="fas fa-file"></i> @child.NAME (@child.DOC_COUNT)</li>
+                                    <li>
+                                        <i class="fas fa-file"></i>
+                                        <a href="/Document/DocClass/@child.SEQ">@child.NAME (@child.DOC_COUNT)</a>
+                                    </li>
                                 }
                             </ul>
                         }
@@ -105,7 +109,7 @@
                                 <th>번호</th>
                                 <th>문서제목</th>
                                 <th>리비전</th>
-                                <th>상태</th>
+                                @*<th>상태</th>*@
                                 <th>작성자</th>
                                 <th>작성일</th>
                                 <th>수정자</th>
@@ -126,9 +130,9 @@
                                     <td>
                                         @Html.DisplayFor(modelItem => doc.REVISION)
                                     </td>
-                                    <td>
+                                    @*<td>
                                         @Html.DisplayFor(modelItem => doc.STATE)
-                                    </td>
+                                    </td>*@
                                     <td>
                                         @Html.DisplayFor(modelItem => doc.CREATE_USER)
                                     </td>
@@ -175,13 +179,17 @@
                         <input type="text" id="title" class="form-control" placeholder="">
                     </div>
                     <div class="form-group">
+                        <label class="form-label" for="title">문서제목</label>
+                        <input type="text" id="title" class="form-control" placeholder="">
+                    </div>
+                    <div class="form-group">
                         <label class="form-label" for="content">내용</label>
                         <textarea class="form-control" id="content" rows="5"></textarea>
                     </div>
-                    <div class="form-group">
+                    @*<div class="form-group">
                         <label class="form-label" for="state">상태</label>
                         <input type="text" id="state" class="form-control" placeholder="">
-                    </div>
+                    </div>*@
                     <div class="form-group">
                         <label class="form-label" for="create_user">작성자</label>
                         <input type="text" id="create_user" class="form-control" placeholder="">
@@ -204,7 +212,7 @@
                     </div>
                     <div id="fileDownload" class="form-group">
                         @*<label id="fileDownloadList" class="form-label" for="file">첨부 파일</label>
-                            <input type="file" readonly="" class="form-control-plaintext" id="file" value="">*@
+            <input type="file" readonly="" class="form-control-plaintext" id="file" value="">*@
                     </div>
                     <div id="fileUpload" class="form-group">
                         <label class="form-label">파일 등록</label>

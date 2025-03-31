@@ -38,8 +38,8 @@ public class DocumentController : Controller
     }
 
     // 문서관리 메인 화면
-    [HttpGet("/Document")]
-    public async Task<IActionResult> DocumentMain()
+    [HttpGet("/Document/DocClass/{filterType?}")]
+    public async Task<IActionResult> DocumentMain(int? filterType)
     {
         var documentClasses = _context.Document_Classes
             .ToList() // 먼저 리스트로 가져옴
@@ -55,17 +55,22 @@ public class DocumentController : Controller
             })
             .ToList();
 
-        //var documentClasses = await _context.Document_Classes.ToListAsync();
-        T_Document_Class t_doc_class = new T_Document_Class();
-        var docClassTreeMenu = t_doc_class.BuildTree(documentClasses);
-
+        T_Document_Class docClassTree = new T_Document_Class();
+        var docClassTreeMenu = docClassTree.BuildTree(documentClasses);
         ViewBag.docClasses = docClassTreeMenu;
 
-        var documents = await _context.Documents
-            .Where(document => document.TYPE == "DOCUMENT")
-            //.Where(document => document.RECENT == 1) // 필요시 주석 제거
+        var query = _context.Documents.AsQueryable();
+        query = query.Where(document => document.TYPE == "DOCUMENT");
+
+        if (filterType.HasValue)
+        {
+            query = query.Where(document => document.DOC_CLASS_SEQ == filterType);
+        }
+
+        var documents = await query
             .OrderByDescending(document => document.CREATE_DATE)
             .ToListAsync();
+
 
         return View(documents);
 
@@ -73,19 +78,19 @@ public class DocumentController : Controller
 
 
 
-    [HttpGet("/Document/{SEQ}")]
-    public async Task<IActionResult> GetDocument(int? SEQ)
-    {
+    //[HttpGet("/Document/{SEQ}")]
+    //public async Task<IActionResult> GetDocument(int? SEQ)
+    //{
 
-        if (SEQ == null)
-        {
-            return NotFound();
-        }
+    //    if (SEQ == null)
+    //    {
+    //        return NotFound();
+    //    }
 
-        var documents = await _context.Documents.Where(o => o.DOC_CLASS_SEQ == SEQ).ToListAsync();
+    //    var documents = await _context.Documents.Where(o => o.DOC_CLASS_SEQ == SEQ).ToListAsync();
 
-        return Ok(documents);
-    }
+    //    return Ok(documents);
+    //}
 
 
 

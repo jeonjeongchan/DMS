@@ -11,7 +11,7 @@ namespace DMS.Models
     public class T_Document_Class {
 
         [Key]
-        public int SEQ { get; set; }
+        public int? SEQ { get; set; }
         public int? P_SEQ { get; set; }
         public string? NAME { get; set; }
         public int? LEVEL { get; set; }
