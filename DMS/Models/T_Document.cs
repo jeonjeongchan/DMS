@@ -41,6 +41,8 @@ namespace DMS.Models
 
         //[NotMapped]
         //public IFormFile? T_File { get; set; }
+        [NotMapped]
+        public string? DOC_CLASS_NAME { get; set; }
 
         [NotMapped]
         public List<T_File?>? file_list { get; set; }

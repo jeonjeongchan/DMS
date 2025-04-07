@@ -12,7 +12,8 @@ namespace DMS.Services
 	public class AccountService
 	{
         private readonly ApplicationDbContext _context;
-            
+        string connectionString = "Data Source=localhost:1521/FREEPDB1;User Id=JJC;Password=Qwer1234;";
+
         public AccountService(ApplicationDbContext context)
         {
             _context = context;
@@ -109,7 +110,7 @@ namespace DMS.Services
         {
             var memberCheck = _context.Members.SingleOrDefault(u => u.OID == OID);
 
-            string connectionString = "Data Source=211.244.81.163:9090/ORCL;User Id=JJC;Password=Qwer1234;";
+
             string query = @"
                         UPDATE JJC.OBJECT
                          SET NAME = :NAME,
@@ -131,7 +132,7 @@ namespace DMS.Services
                         
                         int rowsAffected = command.ExecuteNonQuery();
 
-                        Console.WriteLine($"{rowsAffected} row(s) updated successfully.");
+                        //Console.WriteLine($"{rowsAffected} row(s) updated successfully.");
                     }
 
                     query = @"

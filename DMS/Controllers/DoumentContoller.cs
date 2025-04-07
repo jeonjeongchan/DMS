@@ -59,15 +59,31 @@ public class DocumentController : Controller
         var docClassTreeMenu = docClassTree.BuildTree(documentClasses);
         ViewBag.docClasses = docClassTreeMenu;
 
-        var query = _context.Documents.AsQueryable();
-        query = query.Where(document => document.TYPE == "DOCUMENT");
+        var documentQuery = from d in _context.Documents
+                    join c in _context.Document_Classes
+                    on d.DOC_CLASS_SEQ equals c.SEQ
+                    where d.TYPE == "DOCUMENT"
+                    select new T_Document
+                    {
+                        OID = d.OID,
+                        DOC_CLASS_SEQ = c.SEQ,
+                        TITLE = d.TITLE,
+                        TYPE = d.TYPE,
+                        CREATE_DATE = d.CREATE_DATE,
+                        MODIFY_DATE = d.MODIFY_DATE,
+                        CREATE_USER = d.CREATE_USER,
+                        MODIFY_USER = d.MODIFY_USER,
+                        REVISION = d.REVISION,
+                        RECENT = d.RECENT,
+                        DOC_CLASS_NAME = c.NAME // 별칭 사용
+                    };
 
         if (filterType.HasValue)
         {
-            query = query.Where(document => document.DOC_CLASS_SEQ == filterType);
+            documentQuery = documentQuery.Where(document => document.DOC_CLASS_SEQ == filterType);
         }
 
-        var documents = await query
+        var documents = await documentQuery
             .OrderByDescending(document => document.CREATE_DATE)
             .ToListAsync();
 
@@ -98,13 +114,20 @@ public class DocumentController : Controller
     [HttpGet("/Document/{OID}")]
     public async Task<IActionResult> GetDocumentDetail(string OID)
     {
-        //string connectionString = _context.Database.GetDbConnection().ConnectionString;
-        var detail = await _context.Documents.FindAsync(OID);
-
-        if (detail == null)
+        var documentDetail = await _context.Documents.FindAsync(OID);
+        if (documentDetail == null)
         {
             return NotFound();
         }
+
+
+        if (documentDetail.DOC_CLASS_SEQ != null)
+        {
+            var docClass = await _context.Document_Classes.FindAsync(documentDetail.DOC_CLASS_SEQ);
+            documentDetail.DOC_CLASS_NAME = docClass.NAME;
+        }
+
+        var docClasses = await _context.Document_Classes.ToListAsync();
 
         var fileRelList = await _context.R_File_Documents.Where(o => o.OID == OID).ToListAsync();
 
@@ -123,12 +146,12 @@ public class DocumentController : Controller
             }
             if (fileList != null)
             {
-                detail.fileList = fileList;
+                documentDetail.fileList = fileList;
             }
 
         }
 
-        return Ok(detail);
+        return Ok(documentDetail);
     }
 
     // 문서 등록
@@ -244,26 +267,38 @@ public class DocumentController : Controller
         {
             var document = await _context.Documents.FindAsync(OID);
 
+            if (document == null)
+            {
+                return BadRequest();
+            }
+
             var relFileDocument = await _context.Documents
                 .Where(d => d.OID == OID)
                 .Include(d => d.R_FILE_DOCUMENT)
                 .ToListAsync();
 
-            if ((updateDocument.T_FILE_LIST.Count + relFileDocument[0].R_FILE_DOCUMENT.Count) > 5)
-            {
-                return BadRequest(new { message = "파일 첨부 개수는 최대 5개까지 가능합니다." });
-            }
 
             _context.Entry(document).State = EntityState.Modified;
 
             document.TITLE = updateDocument.TITLE;
             document.CONTENT = updateDocument.CONTENT;
+            document.DOC_CLASS_SEQ = updateDocument.DOC_CLASS_SEQ;
             document.MODIFY_DATE = DateTime.Now;
             document.MODIFY_USER = HttpContext.Session.GetString("Username");
 
 
             if (updateDocument.T_FILE_LIST != null)
             {
+                var docFileCount = updateDocument.T_FILE_LIST.Count;
+                if (relFileDocument[0].R_FILE_DOCUMENT != null)
+                {
+                    docFileCount += relFileDocument[0].R_FILE_DOCUMENT.Count;
+                }
+
+                if (docFileCount > 5)
+                {
+                    return BadRequest(new { message = "파일 첨부 개수는 최대 5개까지 가능합니다." });
+                }
 
                 for (var i = 0; i < updateDocument.T_FILE_LIST.Count; i++)
                 {
@@ -430,6 +465,7 @@ public class DocumentController : Controller
             recentDocument.RECENT = 1;
             recentDocument.USEFLAG = '1';
             recentDocument.PREVOID = documentCheck.OID;
+            recentDocument.DOC_CLASS_SEQ = documentCheck.DOC_CLASS_SEQ;
 
             _context.Objects.Add(recentDocument);
             _context.Documents.Add(recentDocument);

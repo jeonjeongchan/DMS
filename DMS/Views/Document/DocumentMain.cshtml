@@ -11,6 +11,25 @@
     ViewData["Heading"] = "<i class='subheader-icon fal fa-chart-area'></i> Marketing <span class='fw-300'>문서관리</span>";
     ViewData["UserName"] = username;
     var docClasses = ViewBag.docClass as List<T_Document_Class>;
+    void RenderTree(T_Document_Class item)
+    {
+        <text>
+            <li>
+                <i class="fas fa-file"></i>
+                <a href="/Document/DocClass/@item.SEQ">@item.NAME (@item.DOC_COUNT)</a>
+
+                @if (item.Children != null && item.Children.Count > 0)
+                {
+                    <ul>
+                        @foreach (var child in item.Children)
+                        {
+                            RenderTree(child); 
+                        }
+                    </ul>
+                }
+            </li>
+        </text>
+    }
 }
 
 
@@ -27,36 +46,76 @@
     int index = 1;
 }
 
+
+<style>
+
+    .buttons {
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .tree-horizontal {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 10px;
+        border: 1px solid #ccc;
+    }
+
+    .tree-horizontal ul {
+        display: inline-block;
+    }
+
+    .panel {
+        height: 100%;
+    }
+
+</style>
+
+
+
+
 <div class="row">
     <div class="col-lg-2">
-        <div id="panel-2" class="panel">
+        <div class="panel">
+            <div class="panel-container show">
+                <div class="panel-content">
+                    <div class="buttons">
+                        <button type="button" id="documentClassCreate" class="btn btn-primary" data-toggle="modal" data-target="#documentClassFormModal">등록</button>
+                    </div>
+                    @*<ul>
+            @foreach (var item in ViewBag.docClasses)
+            {
+                <li>
+                    <i class="fas fa-file"></i>
+                    <a href="/Document/DocClass/@item.SEQ">@item.NAME (@item.DOC_COUNT)</a>
 
-            <ul>
-                @foreach (var item in ViewBag.docClasses)
-                {
-                    <li>
-                        <i class="fas fa-file"></i>
-                        <a href="/Document/DocClass/@item.SEQ">@item.NAME (@item.DOC_COUNT)</a>
-
-                        @if (item.Children.Count > 0)
+                    @if (item.Children.Count > 0)
+                    {
+                        <ul>
+                            @foreach (var child in item.Children)
+                            {
+                                <li>
+                                    <i class="fas fa-file"></i>
+                                    <a href="/Document/DocClass/@child.SEQ">@child.NAME (@child.DOC_COUNT)</a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </li>
+            }
+        </ul>*@
+                <div class="tree-scroll-horizontal">
+                    <ul style="display: inline-block;">
+                        @foreach (var item in ViewBag.docClasses as List<T_Document_Class>)
                         {
-                            <ul>
-                                @foreach (var child in item.Children)
-                                {
-                                    <li>
-                                        <i class="fas fa-file"></i>
-                                        <a href="/Document/DocClass/@child.SEQ">@child.NAME (@child.DOC_COUNT)</a>
-                                    </li>
-                                }
-                            </ul>
+                            RenderTree(item);
                         }
-                    </li>
-                }
-            </ul>
+                    </ul>
+                </div>
 
 
 
-            @*<div class="flex-1 pr-3">
+                    @*<div class="flex-1 pr-3">
             <a href="/page/inboxgeneral" class="dropdown-item px-3 px-sm-4 pr-lg-3 pl-lg-5 py-2 fs-md font-weight-bold d-flex justify-content-between rounded-pill border-top-left-radius-0 border-bottom-left-radius-0 @(ViewBag.PageName == "page_inbox_general" ? "active" : "")">
                 <div>
                     <i class="fas fa-folder-open width-1"></i>Inbox
@@ -91,10 +150,12 @@
                 </div>
             </a>
         </div>*@
+                </div>
+            </div>
         </div>
     </div>
     <div class="col-lg-10">
-        <div id="panel-2" class="panel">
+        <div class="panel">
             <div class="panel-container show">
                 <div class="panel-content">
                     <div class="buttons">
@@ -107,6 +168,7 @@
                         <thead class="bg-warning-200">
                             <tr>
                                 <th>번호</th>
+                                <th>문서분류이름</th>
                                 <th>문서제목</th>
                                 <th>리비전</th>
                                 @*<th>상태</th>*@
@@ -125,14 +187,17 @@
                                         @index
                                     </td>
                                     <td>
+                                        @Html.DisplayFor(modelItem => doc.DOC_CLASS_NAME)
+                                    </td>
+                                    <td>
                                         @Html.DisplayFor(modelItem => doc.TITLE)
                                     </td>
                                     <td>
                                         @Html.DisplayFor(modelItem => doc.REVISION)
                                     </td>
                                     @*<td>
-                                        @Html.DisplayFor(modelItem => doc.STATE)
-                                    </td>*@
+                                            @Html.DisplayFor(modelItem => doc.STATE)
+                                        </td>*@
                                     <td>
                                         @Html.DisplayFor(modelItem => doc.CREATE_USER)
                                     </td>
@@ -175,8 +240,26 @@
                 <form id="documentForm">
                     @*<div class="alert alert-primary text-dark"></div>*@
                     <div class="form-group">
-                        <label class="form-label" for="title">문서제목</label>
-                        <input type="text" id="title" class="form-control" placeholder="">
+                        <label class="form-label" for="doc_class_name">
+                            문서 분류
+                        </label>
+                        <select class="select2 form-control w-100" id="doc_class_name">
+                            <optgroup label="문서분류선택">
+                                <option value="">문서분류선택</option>
+                                @foreach (var item in ViewBag.docClasses)
+                                {
+                                    <option value="@item.SEQ">@item.NAME</option>
+                                    @if (item.Children.Count > 0)
+                                    {
+                                        @foreach (var child in item.Children)
+                                        {
+                                            <option value="@child.SEQ">@child.NAME</option>
+                                        }
+
+                                    }
+                                }
+                            </optgroup>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="title">문서제목</label>
@@ -187,9 +270,9 @@
                         <textarea class="form-control" id="content" rows="5"></textarea>
                     </div>
                     @*<div class="form-group">
-                        <label class="form-label" for="state">상태</label>
-                        <input type="text" id="state" class="form-control" placeholder="">
-                    </div>*@
+                            <label class="form-label" for="state">상태</label>
+                            <input type="text" id="state" class="form-control" placeholder="">
+                        </div>*@
                     <div class="form-group">
                         <label class="form-label" for="create_user">작성자</label>
                         <input type="text" id="create_user" class="form-control" placeholder="">
@@ -212,7 +295,7 @@
                     </div>
                     <div id="fileDownload" class="form-group">
                         @*<label id="fileDownloadList" class="form-label" for="file">첨부 파일</label>
-            <input type="file" readonly="" class="form-control-plaintext" id="file" value="">*@
+                            <input type="file" readonly="" class="form-control-plaintext" id="file" value="">*@
                     </div>
                     <div id="fileUpload" class="form-group">
                         <label class="form-label">파일 등록</label>
@@ -333,6 +416,11 @@
                 return false;
             }
 
+            if ($('#doc_class_name').val() === '') {
+                alert('문서분류를 선택해주세요');
+                return false;
+            }
+
             if ($('#content').val() === '') {
                 alert('내용을 입력해주세요');
                 return false;
@@ -363,6 +451,7 @@
             $('input').prop('readonly', true);
             $('textarea').prop('readonly', true);
             $('#fileUpload').hide();
+            $('#doc_class_name').attr('disabled', 'disabled');
             $('#documentCreateSubmit').hide();
             $('#documentEditSubmit').hide();
             $('#fileDownload').show();
@@ -387,7 +476,8 @@
                     } else {
                         $('#modify_date').val(null);
                     }
-
+                    $('#doc_class_name').val(data.doC_CLASS_SEQ);
+                    $('#doc_class_name').change();
                     $('#create_user').val(data.creatE_USER);
                     $('#modify_user').val(data.modifY_USER);
                     $('#revision').val(data.revision);
@@ -398,16 +488,19 @@
                     fileList.html(fileLabelName);
 
                     //파일 목록을 동적으로 추가
-                    data.fileList.$values.forEach((i, index) => {
-                        const fileHtml = `
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                     <input type="text" readonly="" class="form-control-plaintext" value="${i}" readonly />
-                                     <input type="button" value="다운로드" onclick="downloadFile('${i}')" />
-                                    </div>
-                                `;
+                    if (data.fileList != null) {
+                        data.fileList.$values.forEach((i, index) => {
+                            const fileHtml = `
+                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                 <input type="text" readonly="" class="form-control-plaintext" value="${i}" readonly />
+                                                 <input type="button" value="다운로드" onclick="downloadFile('${i}')" />
+                                                </div>
+                                            `;
 
-                        fileList.append(fileHtml);
-                    });
+                            fileList.append(fileHtml);
+                        });
+                    }
+
 
 
                 },
@@ -447,6 +540,7 @@
                     $('#modify_user').attr('readonly', 'readonly');
                     $('#create_date').attr('readonly', 'readonly');
                     $('#modify_date').attr('readonly', 'readonly');
+                    $('#doc_class_name').removeAttr('disabled', 'disabled');
                     $('#state').attr('readonly', 'readonly');
                     $('#revision').attr('readonly', 'readonly');
                     $('#documentCreateSubmit').hide();
@@ -472,7 +566,8 @@
                             } else {
                                 $('#modify_date').val(null);
                             }
-
+                            $('#doc_class_name').val(data.doC_CLASS_SEQ);
+                            $('#doc_class_name').change();
                             $('#create_user').val(data.creatE_USER);
                             $('#modify_user').val(data.modifY_USER);
                             $('#revision').val(data.revision);
@@ -489,20 +584,23 @@
                             //    fileList.append(toggleButtonHtml); // 라벨 바로 아래에 버튼을 추가
                             //}
 
+                            if (data.r_FILE_DOCUMENT != null) {
+                                for (var i = 0; i < data.r_FILE_DOCUMENT.$values.length; i++) {
 
-                            for (var i = 0; i < data.r_FILE_DOCUMENT.$values.length; i++) {
+                                    var seq = data.r_FILE_DOCUMENT.$values[i].seq;
+                                    var fileName = data.r_FILE_DOCUMENT.$values[i].t_File.filE_NAME;
 
-                                var seq = data.r_FILE_DOCUMENT.$values[i].seq;
-                                var fileName = data.r_FILE_DOCUMENT.$values[i].t_File.filE_NAME;
+                                    const fileHtml = `
+                                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                                            <input type="text" readonly="" class="form-control-plaintext" value="${fileName}" readonly />
+                                                            <input type="button" value="삭제" onclick="fileRemove('${seq}')" />
+                                                        </div>
+                                                    `;
+                                    fileList.append(fileHtml);
+                                }
 
-                                const fileHtml = `
-                                            <div style="display: flex; align-items: center; gap: 10px;">
-                                                <input type="text" readonly="" class="form-control-plaintext" value="${fileName}" readonly />
-                                                <input type="button" value="삭제" onclick="fileRemove('${seq}')" />
-                                            </div>
-                                        `;
-                                fileList.append(fileHtml);
                             }
+
 
 
                         },
@@ -539,7 +637,7 @@
                             data: JSON.stringify({ OIDs: selectedOids }),
                             success: function (data) {
                                 alert('문서 삭제 성공');
-                                window.location.href = '/Document';
+                                window.location.href = '/Document/DocClass';
 
                             },
                             error: function (xhr, status, error) {
@@ -566,6 +664,7 @@
                 $('#revision').attr('readonly', 'readonly');
                 $('#create_user').attr('readonly', 'readonly');
                 $('#modify_user').attr('readonly', 'readonly');
+                $('#doc_class_name').removeAttr('disabled', 'disabled');
                 $('#fileUpload').show();
                 $('#documentCreateSubmit').show();
                 $('#documentEditSubmit').hide();
@@ -581,42 +680,43 @@
             // 문서등록 완료
             $('#documentCreateSubmit').on("click", async function () {
                 event.preventDefault();
-                if (confirm("등록 하시겠습니까?")) {
+                if (isValidForm()) {
+                    if (confirm("등록 하시겠습니까?")) {
 
-                    var formData = new FormData();
-                    var method = 'POST';
-                    var urlMethod = '/Document';
+                        var formData = new FormData();
+                        var method = 'POST';
+                        var urlMethod = '/Document';
 
-                    formData.append("TITLE", $('#title').val());
-                    formData.append("CONTENT", $('#content').val());
+                        formData.append("TITLE", $('#title').val());
+                        formData.append("CONTENT", $('#content').val());
+                        formData.append("DOC_CLASS_SEQ", $('#doc_class_name').val());
 
-
-                    documentDropzone.files.forEach(function (file) {
-                        formData.append("T_FILE_LIST", file);  // 각 파일을 FormData에 추가
-                    });
-
-
-                    const response = await fetch(urlMethod, {
-                        method: method,
-                        body: formData
-                    })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error("문제가 발생하였습니다. 관리자에게 문의하세요.");
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            alert(data.message);
-                            window.location.href = '/Document';
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            alert("Error: " + error.message);
+                        documentDropzone.files.forEach(function (file) {
+                            formData.append("T_FILE_LIST", file);  // 각 파일을 FormData에 추가
                         });
 
-                }
 
+                        const response = await fetch(urlMethod, {
+                            method: method,
+                            body: formData
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error("문제가 발생하였습니다. 관리자에게 문의하세요.");
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                alert(data.message);
+                                window.location.href = '/Document/DocClass';
+                            })
+                            .catch(error => {
+                                console.error("Error:", error);
+                                alert("Error: " + error.message);
+                            });
+
+                    }
+                }
             });
 
             // 문서편집 완료
@@ -635,7 +735,7 @@
                         formData.append("OID", documentId);
                         formData.append("TITLE", $('#title').val());
                         formData.append("CONTENT", $('#content').val());
-
+                        formData.append("DOC_CLASS_SEQ", $('#doc_class_name').val());
 
                         documentDropzone.files.forEach(function (file) {
                             formData.append("T_FILE_LIST", file);  // 각 파일을 FormData에 추가
@@ -656,7 +756,7 @@
                             })
                             .then(data => {
                                 alert(data.message);
-                                window.location.href = '/Document';
+                                window.location.href = '/Document/DocClass';
                             })
                             .catch(error => {
                                 alert(error.message);
@@ -696,7 +796,7 @@
                             data: JSON.stringify(updatedData),
                             success: function (data) {
                                 alert("개정 완료");
-                                window.location.href = '/Document';
+                                window.location.href = '/Document/DocClass';
                             },
                             error: function (xhr, status, error) {
                                 console.log('Error:', error);
