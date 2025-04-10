@@ -42,6 +42,7 @@ public class DocumentController : Controller
     public async Task<IActionResult> DocumentMain(int? filterType)
     {
         var documentClasses = _context.Document_Classes
+            .OrderBy(dc => dc.ORDER)
             .ToList() // 먼저 리스트로 가져옴
             .Select(dc => new T_Document_Class
             {
@@ -477,6 +478,50 @@ public class DocumentController : Controller
 
         return Ok(new { success = true }); 
     }
+
+
+
+
+
+
+    // 문서 등록
+    [HttpPost("/DocumentClass")]
+    public async Task<IActionResult> CreateDocumentClass(T_Document_Class docClass)
+    {
+        if (ModelState.IsValid)
+        {
+
+            _context.Document_Classes.Add(docClass);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException dbEx)
+            {
+                Console.WriteLine($"Database Error: {dbEx.InnerException?.Message}");
+                return StatusCode(500, "Database error occurred");
+            }
+
+            return Ok(new { message = "문서 분류 등록 완료" });
+        }
+        else
+        {
+            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            {
+                Console.WriteLine(error.ErrorMessage);
+            }
+        }
+        return BadRequest(new { success = false });
+    }
+
+
+
+
+
+
+
+
 
     // 에러
     private bool DocumentExists(string OID)
