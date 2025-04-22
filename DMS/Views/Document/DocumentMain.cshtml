@@ -1,9 +1,12 @@
 @using Microsoft.AspNetCore.Http
 @using DMS.Models
+
+
 @{
     var username = Context.Session.GetString("Username");
 }
 @model IEnumerable<T_Document>
+
 @{
     ViewData["Title"] = "메인화면";
     ViewData["PageName"] = "document_main";
@@ -30,6 +33,8 @@
             </li>
         </text>
     }
+
+
 }
 
 
@@ -66,12 +71,12 @@
         border: 1px solid #ccc;
     }
 
-/*    분류 편집 스타일*/
-    .docClassTree_Container ul {
-        white-space: nowrap;
-    }
+        /*    분류 편집 스타일*/
+        .docClassTree_Container ul {
+            white-space: nowrap;
+        }
 
-    .docClassEditContainer li {
+    .docClassSelectContainer li {
         cursor: pointer;
     }
 
@@ -80,9 +85,6 @@
         border-left: 4px solid #ffa500; /* 오렌지색 강조선 */
         padding-left: 10px;
     }
-
-
-
 </style>
 
 
@@ -94,8 +96,9 @@
             <div class="panel-container show">
                 <div class="panel-content">
                     <div class="buttons">
-                        <button type="button" id="documentClassEdit" class="btn btn-warning"  data-toggle="modal" data-target="#documentClassEditModal">편집</button>
+                        <button type="button" id="documentClassSelect" class="btn btn-warning" data-toggle="modal" data-target="#documentClassSelectModal">편집</button>
                     </div>
+
                     <div class="docClassTree_Container">
                         <ul>
                             @foreach (var item in ViewBag.docClasses as List<T_Document_Class>)
@@ -270,19 +273,19 @@
 
 
 
-@*문서분류편집 모달*@
-<div class="modal fade" id="documentClassEditModal" tabindex="-1" role="dialog" aria-labelledby="documentClassEditModalLabel" aria-hidden="true">
+@*문서분류선택 모달*@
+<div class="modal fade" id="documentClassSelectModal" tabindex="-1" role="dialog" aria-labelledby="documentClassSelectModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="documentClass">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="documentClassEditModalLabel">문서 분류 편집</h5>
+                <h5 class="modal-title" id="documentClassSelectModalLabel">문서분류선택</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <div class="docClassTree_Container docClassEditContainer">
-                    <ul>
+                <div class="docClassTree_Container docClassSelectContainer">
+                    <ul class="doc-tree">
                         @foreach (var item in ViewBag.docClasses as List<T_Document_Class>)
                         {
                             RenderTree(item);
@@ -291,13 +294,87 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" id="documentClassCreate" class="btn btn-primary">등록</button>
-                <button type="button" id="documentClassEdit" class="btn btn-primary">수정</button>
+                <button type="button" id="documentClassCreate" class="btn btn-primary" data-toggle="modal" data-target="#documentClassCreateModal">등록</button>
+                <button type="button" id="documentClassEdit" class="btn btn-primary" data-toggle="modal">수정</button>
+                <button type="button" id="documentClassDelete" class="btn btn-primary" data-toggle="modal">삭제</button>
+                <button type="button" id="documentClassCancel" class="btn btn-primary" data-toggle="modal">선택취소</button>
                 @*<button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>*@
             </div>
         </div>
     </div>
 </div>
+
+
+
+
+
+
+@*문서분류등록모달*@
+<div class="modal fade" id="documentClassCreateModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="documentClass">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="documentClassCreateModalLabel">문서분류등록</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+            </div>
+            <div class="modal-body">
+                <form id="documentClassCreateForm">
+                    <div class="form-group">
+                        <label class="form-label" for="docClassCreateLocation">문서분류선택</label>
+                        <input type="text" id="docClassCreateLocation" class="form-control" placeholder="">
+                        <input type="hidden" id="docClassCreateLocationSEQ" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="docClassCreateName">문서분류이름</label>
+                        <input type="text" id="docClassCreateName" class="form-control" placeholder="">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="documentClassCreateSubmit" class="btn btn-primary">완료</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@*문서분류편집모달*@
+<div class="modal fade" id="documentClassEditModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="documentClass">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="documentClassEditModalLabel">문서분류편집</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+            </div>
+            <div class="modal-body">
+                <form id="documentClassEditForm">
+                    <div class="form-group">
+                        <label class="form-label" for="docClassEditParentLocation">문서분류선택</label>
+                        <input type="hidden" id="docClassEditLocationSEQ" />
+                        <select id="docClassEditParentLocation" class="form-control">
+                            <option value="">-- 문서분류선택 --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="docClassEditName">문서분류이름</label>
+                        <input type="text" id="docClassEditName" class="form-control" placeholder="">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="documentClassEditSubmit" class="btn btn-primary">수정</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 
 
 @section ScriptsBlock {
@@ -307,9 +384,7 @@
     <script src="~/js/statistics/easypiechart/easypiechart.bundle.js"></script>
     <script src="~/js/datagrid/datatables/datatables.bundle.js"></script>
     <script src="~/js/formplugins/dropzone/dropzone.js"></script>
-    <script>
-
-        // 드롭존 (첨부파일)
+    <script>// 드롭존 (첨부파일)
         Dropzone.autoDiscover = false;
         const documentDropzone = new Dropzone("#documentDropzone", {
             url: "#",  // 서버 업로드 경로
@@ -477,11 +552,11 @@
                     if (data.fileList != null) {
                         data.fileList.$values.forEach((i, index) => {
                             const fileHtml = `
-                                                <div style="display: flex; align-items: center; gap: 10px;">
-                                                 <input type="text" readonly="" class="form-control-plaintext" value="${i}" readonly />
-                                                 <input type="button" value="다운로드" onclick="downloadFile('${i}')" />
-                                                </div>
-                                            `;
+                                                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                                                         <input type="text" readonly="" class="form-control-plaintext" value="${i}" readonly />
+                                                                         <input type="button" value="다운로드" onclick="downloadFile('${i}')" />
+                                                                        </div>
+                                                                    `;
 
                             fileList.append(fileHtml);
                         });
@@ -501,12 +576,30 @@
 
             var documentId = null;
 
-            $('.docClassEditContainer li a').removeAttr('href');
+            $('.docClassSelectContainer li a').removeAttr('href');
 
-            $('.docClassEditContainer li a').on('click', function () {
-                $('.docClassEditContainer li a').removeClass('li-highlight');  // 기존 하이라이트 제거
+            $('.docClassSelectContainer li a').on('click', function () {
+                $('.docClassSelectContainer li a').removeClass('li-highlight');  // 기존 하이라이트 제거
                 $(this).addClass('li-highlight');     // 클릭한 li에 하이라이트
             });
+
+
+            $.ajax({
+                url: '/DocumentClass',
+                method: 'GET',
+                success: function (data) {
+                    debugger;
+                    data.$values.forEach(function (documentClass) {
+                        $('#docClassEditParentLocation').append(
+                            `<option value="${documentClass.seq}">${documentClass.name}</option>`
+                        );
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error loading products:", error);
+                }
+            });
+
 
             // 문서편집
             $('#documentEdit').on('click', function () {
@@ -583,11 +676,11 @@
                                     var fileName = data.r_FILE_DOCUMENT.$values[i].t_File.filE_NAME;
 
                                     const fileHtml = `
-                                                        <div style="display: flex; align-items: center; gap: 10px;">
-                                                            <input type="text" readonly="" class="form-control-plaintext" value="${fileName}" readonly />
-                                                            <input type="button" value="삭제" onclick="fileRemove('${seq}')" />
-                                                        </div>
-                                                    `;
+                                                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                                                    <input type="text" readonly="" class="form-control-plaintext" value="${fileName}" readonly />
+                                                                                    <input type="button" value="삭제" onclick="fileRemove('${seq}')" />
+                                                                                </div>
+                                                                            `;
                                     fileList.append(fileHtml);
                                 }
 
@@ -604,6 +697,8 @@
                 }
 
             });
+
+
 
             // 문서삭제
             $('#documentDelete').on('click', function () {
@@ -803,20 +898,102 @@
 
 
 
-            // 문서등록 완료
-            $('#documentClassCreate').on("click", async function () {
+            // 문서분류 등록 완료
+            $('#documentClassCreateSubmit').on("click", async function () {
                 event.preventDefault();
-     
-                    if (confirm("등록 하시겠습니까?")) {
+
+                if (confirm("등록 하시겠습니까?")) {
+
+                    var formData = new FormData();
+                    var docClassLocation = $('#docClassCreateLocationSEQ').val();
+                    if (docClassLocation != null) {
+                        formData.append("P_SEQ", docClassLocation);
+                    }
+                    formData.append("NAME", $('#docClassCreateName').val());
+                    var method = 'POST';
+                    var urlMethod = '/DocumentClass';
+
+                    const response = await fetch(urlMethod, {
+                        method: method,
+                        body: formData
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error("문제가 발생하였습니다. 관리자에게 문의하세요.");
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            alert(data.message);
+                            window.location.href = '/Document/DocClass';
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            alert("Error: " + error.message);
+                        });
+
+                }
+
+            });
+
+
+
+            // 문서분류 편집 완료
+            $('#documentClassEditSubmit').on("click", async function () {
+                event.preventDefault();
+
+                if (confirm("편집 하시겠습니까?")) {
+                    debugger;
+                    var formData = new FormData();
+                    var docClassLocation = $('#docClassEditLocationSEQ').val();
+                    formData.append("SEQ", docClassLocation);
+                    formData.append("P_SEQ", $('#docClassEditParentLocation').val());
+                    formData.append("NAME", $('#docClassEditName').val());
+                    var method = 'PUT';
+                    var urlMethod = '/DocumentClass/' + docClassLocation;
+
+                    const response = await fetch(urlMethod, {
+                        method: method,
+                        body: formData
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error("문제가 발생하였습니다. 관리자에게 문의하세요.");
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            alert(data.message);
+                            window.location.href = '/Document/DocClass';
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            alert("Error: " + error.message);
+                        });
+
+                }
+
+            });
+
+
+
+
+            // 문서분류 삭제 완료
+            $('#documentClassDelete').on("click", async function () {
+                event.preventDefault();
+                var SEQ = $('a.li-highlight').closest('li').data('id');
+                if (SEQ == null) {
+                    alert("삭제할 문서를 선택해주세요.");
+                }
+                else {
+
+                    if (confirm("삭제 하시겠습니까?")) {
 
                         var formData = new FormData();
+                        formData.append("SEQ", SEQ);
 
-                        let highlightID = $('a.li-highlight').closest('li').data('id');
-                        if (highlightID != null) {
-                            formData.append("P_SEQ", highlightID);
-                        }
-                       
-                        var method = 'POST';
+
+                        var method = 'DELETE';
                         var urlMethod = '/DocumentClass';
 
                         const response = await fetch(urlMethod, {
@@ -839,7 +1016,65 @@
                             });
 
                     }
-                
+                }
+
+            });
+
+
+
+
+            // 문서분류 등록
+            $('#documentClassCreate').on('click', function () {
+                var highlightID = null;
+                var highlightText = null;
+                highlightID = $('a.li-highlight').closest('li').data('id');
+                highlightText = $('a.li-highlight').text();
+                $('.docClassCreateContainer li a').removeClass('li-highlight');
+                $('#docClassCreateLocationSEQ').val(highlightID);
+                $('#docClassCreateLocation').attr('readonly', 'readonly');
+
+                $.ajax({
+                    url: '/DocumentClass/' + highlightID,
+                    type: 'GET',
+                    success: function (data) {
+                        debugger;
+                        $('#documentClassCreateModal').modal('show');
+                        $('#docClassCreateLocation').val(data.name);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error:', error);
+                    }
+                });
+            });
+
+            // 문서분류 편집
+            $('#documentClassEdit').on('click', function () {
+                var highlightID = null;
+                var highlightText = null;
+                highlightID = $('a.li-highlight').closest('li').data('id');
+                $('.docClassSelectContainer li a').removeClass('li-highlight');
+                $.ajax({
+                    url: '/DocumentClass/' + highlightID,
+                    type: 'GET',
+                    success: function (data) {
+                        debugger;
+                        $('#documentClassEditModal').modal('show');
+                        $('#docClassEditLocationSEQ').val(data.seq);
+                        $('#docClassEditParentLocation').val(data.p_SEQ);
+                        $('#docClassEditName').val(data.name);
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error:', error);
+                    }
+                });
+
+
+
+            });
+
+            $('#documentClassCancel').on('click', function () {
+                $('.docClassSelectContainer li a').removeClass('li-highlight');
             });
 
 

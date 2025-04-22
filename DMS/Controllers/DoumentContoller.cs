@@ -95,22 +95,6 @@ public class DocumentController : Controller
 
 
 
-    //[HttpGet("/Document/{SEQ}")]
-    //public async Task<IActionResult> GetDocument(int? SEQ)
-    //{
-
-    //    if (SEQ == null)
-    //    {
-    //        return NotFound();
-    //    }
-
-    //    var documents = await _context.Documents.Where(o => o.DOC_CLASS_SEQ == SEQ).ToListAsync();
-
-    //    return Ok(documents);
-    //}
-
-
-
     // 문서관리 상세 화면
     [HttpGet("/Document/{OID}")]
     public async Task<IActionResult> GetDocumentDetail(string OID)
@@ -480,17 +464,12 @@ public class DocumentController : Controller
     }
 
 
-
-
-
-
-    // 문서 등록
+    // 문서분류 등록
     [HttpPost("/DocumentClass")]
     public async Task<IActionResult> CreateDocumentClass(T_Document_Class docClass)
     {
         if (ModelState.IsValid)
         {
-
             _context.Document_Classes.Add(docClass);
 
             try
@@ -516,11 +495,103 @@ public class DocumentController : Controller
     }
 
 
+    // 문서분류 수정
+    [HttpPut("/DocumentClass/{SEQ}")]
+    public async Task<IActionResult> PutDocumentClass(int SEQ, T_Document_Class docClass)
+    {
+        if (SEQ != docClass.SEQ)
+        {
+            return BadRequest();
+        }
+
+        try
+        {
+            var docClassCheck = await _context.Document_Classes.FindAsync(SEQ);
+
+            if (docClassCheck == null)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(docClassCheck).State = EntityState.Modified;
+
+            docClassCheck.NAME = docClass.NAME;
+            docClassCheck.P_SEQ = docClass.P_SEQ;
+            _context.Document_Classes.Update(docClassCheck);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Internal server error: " + ex.Message);
+        }
+
+        return Ok(new { message = "문서분류 편집 완료" });
+    }
 
 
 
+    // 문서분류 삭제
+    [HttpDelete("/DocumentClass")]
+    public async Task<IActionResult> DeleteDocumentClass(T_Document_Class docClass)
+    {
+        if (ModelState.IsValid)
+        {
+            var docClassCheck = _context.Document_Classes.FirstOrDefault(d => d.SEQ == docClass.SEQ);
+
+            if (docClassCheck != null)
+            {
+                _context.Document_Classes.Remove(docClassCheck);
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException dbEx)
+            {
+                Console.WriteLine($"Database Error: {dbEx.InnerException?.Message}");
+                return StatusCode(500, "Database error occurred");
+            }
+
+            return Ok(new { message = "문서 분류 삭제 완료" });
+        }
+        else
+        {
+            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            {
+                Console.WriteLine(error.ErrorMessage);
+            }
+        }
+        return BadRequest(new { success = false });
+    }
 
 
+    // 문서분류 전체 조회
+    [HttpGet("/DocumentClass")]
+    public async Task<ActionResult> GetDocumentClass()
+    {
+        var documentClass = await _context.Document_Classes.ToListAsync();
+        if (documentClass == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(documentClass);
+    }
+
+
+    // 문서분류 조회
+    [HttpGet("/DocumentClass/{SEQ}")]
+    public async Task<IActionResult> GetDocumentClass(int SEQ)
+    {
+        var documentClass = await _context.Document_Classes.FindAsync(SEQ);
+        if (documentClass == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(documentClass);
+    }
 
 
     // 에러
