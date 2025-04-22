@@ -197,13 +197,13 @@
                 <form id="documentForm">
                     @*<div class="alert alert-primary text-dark"></div>*@
                     <div class="form-group">
-                        <label class="form-label" for="doc_class_name">
+                        <label class="form-label" for="documentFormDocClassSelect">
                             문서 분류
                         </label>
-                        <select class="select2 form-control w-100" id="doc_class_name">
+                        <select class="select2 form-control w-100" id="documentFormDocClassSelect">
                             <optgroup label="문서분류선택">
                                 <option value="">문서분류선택</option>
-                                @foreach (var item in ViewBag.docClasses)
+                                @*@foreach (var item in ViewBag.docClasses)
                                 {
                                     <option value="@item.SEQ">@item.NAME</option>
                                     @if (item.Children.Count > 0)
@@ -214,7 +214,7 @@
                                         }
 
                                     }
-                                }
+                                }*@
                             </optgroup>
                         </select>
                     </div>
@@ -477,7 +477,7 @@
                 return false;
             }
 
-            if ($('#doc_class_name').val() === '') {
+            if ($('#documentFormDocClassSelect').val() === '') {
                 alert('문서분류를 선택해주세요');
                 return false;
             }
@@ -512,7 +512,7 @@
             $('input').prop('readonly', true);
             $('textarea').prop('readonly', true);
             $('#fileUpload').hide();
-            $('#doc_class_name').attr('disabled', 'disabled');
+            $('#documentFormDocClassSelect').attr('disabled', 'disabled');
             $('#documentCreateSubmit').hide();
             $('#documentEditSubmit').hide();
             $('#fileDownload').show();
@@ -537,8 +537,8 @@
                     } else {
                         $('#modify_date').val(null);
                     }
-                    $('#doc_class_name').val(data.doC_CLASS_SEQ);
-                    $('#doc_class_name').change();
+                    $('#documentFormDocClassSelect').val(data.doC_CLASS_SEQ);
+                    $('#documentFormDocClassSelect').change();
                     $('#create_user').val(data.creatE_USER);
                     $('#modify_user').val(data.modifY_USER);
                     $('#revision').val(data.revision);
@@ -593,6 +593,10 @@
                         $('#docClassEditParentLocation').append(
                             `<option value="${documentClass.seq}">${documentClass.name}</option>`
                         );
+
+                        $('#documentFormDocClassSelect').append(
+                            `<option value="${documentClass.seq}">${documentClass.name}</option>`
+                        );
                     });
                 },
                 error: function (xhr, status, error) {
@@ -625,7 +629,7 @@
                     $('#modify_user').attr('readonly', 'readonly');
                     $('#create_date').attr('readonly', 'readonly');
                     $('#modify_date').attr('readonly', 'readonly');
-                    $('#doc_class_name').removeAttr('disabled', 'disabled');
+                    $('#documentFormDocClassSelect').removeAttr('disabled', 'disabled');
                     $('#state').attr('readonly', 'readonly');
                     $('#revision').attr('readonly', 'readonly');
                     $('#documentCreateSubmit').hide();
@@ -651,8 +655,8 @@
                             } else {
                                 $('#modify_date').val(null);
                             }
-                            $('#doc_class_name').val(data.doC_CLASS_SEQ);
-                            $('#doc_class_name').change();
+                            $('#documentFormDocClassSelect').val(data.doC_CLASS_SEQ);
+                            $('#documentFormDocClassSelect').change();
                             $('#create_user').val(data.creatE_USER);
                             $('#modify_user').val(data.modifY_USER);
                             $('#revision').val(data.revision);
@@ -751,7 +755,7 @@
                 $('#revision').attr('readonly', 'readonly');
                 $('#create_user').attr('readonly', 'readonly');
                 $('#modify_user').attr('readonly', 'readonly');
-                $('#doc_class_name').removeAttr('disabled', 'disabled');
+                $('#documentFormDocClassSelect').removeAttr('disabled', 'disabled');
                 $('#fileUpload').show();
                 $('#documentCreateSubmit').show();
                 $('#documentEditSubmit').hide();
@@ -776,7 +780,7 @@
 
                         formData.append("TITLE", $('#title').val());
                         formData.append("CONTENT", $('#content').val());
-                        formData.append("DOC_CLASS_SEQ", $('#doc_class_name').val());
+                        formData.append("DOC_CLASS_SEQ", $('#documentFormDocClassSelect').val());
 
                         documentDropzone.files.forEach(function (file) {
                             formData.append("T_FILE_LIST", file);  // 각 파일을 FormData에 추가
@@ -822,7 +826,7 @@
                         formData.append("OID", documentId);
                         formData.append("TITLE", $('#title').val());
                         formData.append("CONTENT", $('#content').val());
-                        formData.append("DOC_CLASS_SEQ", $('#doc_class_name').val());
+                        formData.append("DOC_CLASS_SEQ", $('#documentFormDocClassSelect').val());
 
                         documentDropzone.files.forEach(function (file) {
                             formData.append("T_FILE_LIST", file);  // 각 파일을 FormData에 추가
