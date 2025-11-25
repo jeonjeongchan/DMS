@@ -3,6 +3,7 @@
     var username = Context.Session.GetString("Username");
     var userId = Context.Session.GetString("UserId");
     var userOID = Context.Session.GetString("OID");
+    var grade = Context.Session.GetString("Grade");
 }
 
 <div id="server-data" data-oid="@userOID" data-user-id="@userId"></div>
@@ -16,13 +17,9 @@
             <div class="fs-lg text-truncate text-truncate-lg">
                 환영합니다
                 <br>
-                @if (!string.IsNullOrEmpty(username))
-                {
-                    @username
-                }
-                님
+                @username @((grade == "MANAGER") ? "(관리자)" : "") 님
             </div>
-            <span class="text-truncate text-truncate-md opacity-80">email</span>
+            @*<span class="text-truncate text-truncate-md opacity-80">email</span>*@
         </div>
     </div>
 </div>
@@ -74,13 +71,13 @@
                 $('#myInfoEdit').show();
                 $("#myInfoForm").find("input, textarea, select").attr("disabled", true);
                 $('#myInfoForm')[0].reset();
-                $('#myInfoForm')
                 $('#myInfoFormModal').modal('show');
-                $('#myInfoID').val(data.membeR_ID);
-                $('#myInfoName').val(data.name);
-                $('#myInfoBirthDate').val(createFormDateChange(data.birtH_DATE));
-                $('#myInfoResignDate').val(createFormDateChange(data.resigN_DATE));
-                $('#myInfoGender').val(data.gender);
+                $('#myInfoID').val(data.MEMBER_ID);
+                $('#myInfoName').val(data.NAME);
+                $('#myInfoBirthDate').val(createFormDateChange(data.BIRTH_DATE));
+                $('#myInfoResignDate').val(createFormDateChange(data.RESIGN_DATE));
+                $('#myInfoGender').val(data.GENDER);
+                $('#myInfoEmail').val(data.EMAIL);
             },
             error: function (xhr, status, error) {
                 console.log('Error:', error);
@@ -112,55 +109,107 @@
 
 
 
-        $('#myInfoSubmit').on('click', async function () {
+        //$('#myInfoSubmit').on('click', async function () {
            
-            var form = $("#myInfoForm");
+        //    var form = $("#myInfoForm");
 
-            if (form[0].checkValidity() === false) {
-                event.preventDefault();
-                event.stopPropagation();
+        //    if (form[0].checkValidity() === false) {
+        //        event.preventDefault();
+        //        event.stopPropagation();
+        //        form.addClass('was-validated');
+        //    } else {
+
+        //        event.preventDefault();
+        //        const userOID = document.getElementById('server-data').dataset.oid;
+
+        //        if (confirm("수정 하시겠습니까?")) {
+        //            var method = 'PUT';
+        //            var urlMethod = '/Account/Edit/' + userOID;
+
+        //            var formData = new FormData();
+
+        //            formData.append("OID", userOID);
+        //            formData.append("MEMBER_ID", $('#myInfoID').val());
+        //            formData.append("NAME", $('#myInfoName').val());
+        //            formData.append("BIRTH_DATE", dateChange($('#myInfoBirthDate').val()));
+        //            formData.append("RESIGN_DATE", dateChange($('#myInfoResignDate').val()));
+        //            formData.append("GENDER", $('#myInfoGender').val());
+        //            formData.append("PASSWORD", $('#myInfoPassword').val());
+        //            formData.append("EMAIL", $('#myInfoEmail').val());
+                    
+
+        //            const response = await fetch(urlMethod, {
+        //                method: method,
+        //                body: formData
+        //            })
+        //                .then(response => {
+        //                    if (!response.ok) {
+        //                        throw new Error("문제가 발생하였습니다. 관리자에게 문의하세요.");
+        //                    }
+        //                    return response.json();
+        //                })
+        //                .then(data => {
+        //                    alert(data.message);
+        //                })
+        //                .catch(error => {
+        //                    console.error("Error:", error);
+        //                    alert("Error: " + error.message);
+        //                });
+        //        }
+        //    }
+
+           
+
+        //});
+        $('#myInfoSubmit').on('click', async function (event) {
+            event.preventDefault();
+
+            const form = $("#myInfoForm");
+
+            if (!form[0].checkValidity()) {
                 form.addClass('was-validated');
-            } else {
-
-                event.preventDefault();
-                const userOID = document.getElementById('server-data').dataset.oid;
-
-                if (confirm("수정 하시겠습니까?")) {
-                    var method = 'PUT';
-                    var urlMethod = '/Account/Edit/' + userOID;
-
-                    var formData = new FormData();
-
-                    formData.append("OID", userOID);
-                    formData.append("MEMBER_ID", $('#myInfoID').val());
-                    formData.append("NAME", $('#myInfoName').val());
-                    formData.append("BIRTH_DATE", dateChange($('#myInfoBirthDate').val()));
-                    formData.append("RESIGN_DATE", dateChange($('#myInfoResignDate').val()));
-                    formData.append("GENDER", $('#myInfoGender').val());
-                    //formData.append("PASSWORD", $('#myInfoPassword').val());
-
-                    const response = await fetch(urlMethod, {
-                        method: method,
-                        body: formData
-                    })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error("문제가 발생하였습니다. 관리자에게 문의하세요.");
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            alert(data.message);
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            alert("Error: " + error.message);
-                        });
-                }
+                return;
             }
 
-           
+            const userOID = document.getElementById('server-data').dataset.oid;
 
+            if (!confirm("수정 하시겠습니까?")) return;
+
+            const data = {
+                OID: userOID,
+                MEMBER_ID: $('#myInfoID').val(),
+                NAME: $('#myInfoName').val(),
+                BIRTH_DATE: dateChange($('#myInfoBirthDate').val()),
+                RESIGN_DATE: dateChange($('#myInfoResignDate').val()),
+                GENDER: $('#myInfoGender').val(),
+                PASSWORD: $('#myInfoPassword').val(),
+                EMAIL: $('#myInfoEmail').val()
+            };
+
+            try {
+                const response = await fetch(`/Account/Edit/${userOID}`, {
+                    method: 'PUT',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error("문제가 발생하였습니다. 관리자에게 문의하세요.");
+
+                const result = await response.json();
+                alert(result.message);
+
+                // ✅ 모달 닫기
+                $('#myInfoFormModal').modal('hide');
+
+                // 닫혔다가 다시 열릴 때 최신 데이터 불러오도록 캐시 제거
+                $('#myInfoFormModal').on('hidden.bs.modal', function () {
+                    $(this).removeData('bs.modal');
+                });
+
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error: " + error.message);
+            }
         });
 
     });

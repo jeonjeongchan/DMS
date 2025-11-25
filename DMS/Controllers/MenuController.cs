@@ -1,16 +1,8 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using DMS.Models;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Text.Json;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Reflection;
-using System.Xml.Linq;
 using DMS.Data;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
+
 
 namespace DMS.Controllers;
 
@@ -32,7 +24,7 @@ public class MenuController : Controller
         {
             try
             {
-                MenuList = _context.Menus.ToList();
+                MenuList = _context.Menus.Where(o => o.USEFLAG == 'Y').ToList();
                 transaction.Commit();
 
             }

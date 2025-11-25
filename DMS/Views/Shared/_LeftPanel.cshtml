@@ -14,28 +14,46 @@
                 dataType: "json",
                 type: "get",
                 success: function (data) {
+                    debugger;
                     let menu = data;
                     let array = [];
                     data.$values.forEach((m, index) => {
-                        array.push("<li class='DMS_LeftMenu_li' order='" + m.order + "' menuName='" + m.name + "' address='" + m.address + "'><a href='" + m.address + "'><i class='" + m.icon + "'></i><span class='nav-link-text'>" + m.name + "</span></a></li>")
+                        array.push("<li class='DMS_LeftMenu_li' order='" + m.ORDER + "' menuName='" + m.NAME + "' address='" + m.ADDRESS + "'><a href='" + m.ADDRESS + "'><i class='" + m.ICON + "'></i><span class='nav-link-text'>" + m.NAME + "</span></a></li>")
                     });
+
+                    var currentUrl = window.location.pathname;
 
                     $("#DMS_LeftMenu").append(array);
 
                     let menuAll = $("#DMS_LeftMenu > li");
                     let menuAttr = $(".DMS_LeftMenu_li");
 
-                    $.each(menuAttr, function (i, e) {
+                    if (currentUrl === '/') {
+                        $.each(menuAttr, function (i, e) {
 
-                        let menuName = $(e).attr("menuName");
-                        let address = $(e).attr("address");
+                            let menuName = $(e).attr("menuName");
+                            let address = $(e).attr("address");
 
-                        if (address == window.location.pathname) {
-                            $(e).addClass("active");
-                            return false;
-                        } 
-   
-                    });
+                            if (currentUrl === address) {
+                                $(e).addClass('active');
+                                return;
+                            }
+
+                        });
+                    } else {
+                        $.each(menuAttr, function (i, e) {
+
+                            let menuName = $(e).attr("menuName");
+                            let address = $(e).attr("address");
+
+                            if (currentUrl.indexOf(address) !== -1 && address !== '/') {  // URL이 포함되어 있으면
+                                $(e).addClass('active');                               
+                            }
+
+                        });
+                    }
+
+
 
                 },
                 error: function (data) {

@@ -17,6 +17,7 @@
     <None Remove="CommonUtil\" />
     <None Remove="Views\Document\" />
     <None Remove="Services\" />
+    <None Remove="Views\Approval\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Views\Main\" />
@@ -27,6 +28,9 @@
     <Folder Include="Views\Document\" />
     <Folder Include="wwwroot\uploads\" />
     <Folder Include="Services\" />
+    <Folder Include="wwwroot\css\modules\" />
+    <Folder Include="wwwroot\js\modules\" />
+    <Folder Include="Views\Approval\" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Views\Shared\_Layout.cshtml.back">
@@ -53,5 +57,7 @@
   <ItemGroup>
     <Content Remove="Views\Drawing\DrawingMain11111.cshtml" />
     <Content Remove="wwwroot\uploads\" />
+    <Content Remove="wwwroot\css\modules\" />
+    <Content Remove="wwwroot\js\modules\" />
   </ItemGroup>
 </Project>

@@ -1,13 +1,24 @@
 @{
-        ViewData["Title"] = "대시보드";
-        ViewData["PageName"] = "main_dashboard";
-        ViewData["Category1"] = "홈";
-        ViewData["Heading"] = "<i class='subheader-icon fal fa-chart-area'></i> Marketing <span class='fw-300'>대시보드</span>";
+    ViewData["Title"] = "대시보드";
+    ViewData["PageName"] = "main_dashboard";
+    ViewData["Category1"] = "홈";
+    ViewData["Heading"] = "<i class='subheader-icon fal fa-chart-area'></i> Marketing <span class='fw-300'>대시보드</span>";
 }
+
 
 @section HeadBlock {
     <link rel="stylesheet" media="screen, print" href="~/css/datagrid/datatables/datatables.bundle.css">
 }
+
+@section ScriptsBlock {
+    <script type="text/javascript">/* Activate smart panels */
+        $('#js-page-content').smartPanel();</script>
+    <script src="~/js/statistics/peity/peity.bundle.js"></script>
+    <script src="~/js/statistics/flot/flot.bundle.js"></script>
+    <script src="~/js/statistics/easypiechart/easypiechart.bundle.js"></script>
+    <script src="~/js/datagrid/datatables/datatables.bundle.js"></script>
+}
+
 
 
 

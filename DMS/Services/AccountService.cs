@@ -88,6 +88,36 @@ namespace DMS.Services
         }
 
 
+        //public async Task EditService(string OID, T_Member member)
+        //{
+        //    // DB에서 기존 데이터 가져오기
+        //    var existingMember = await _context.Members.SingleOrDefaultAsync(u => u.OID == OID);
+        //    if (existingMember == null) return;
+
+        //    // 필요한 값만 수정
+        //    existingMember.NAME = member.NAME;
+        //    existingMember.BIRTH_DATE = member.BIRTH_DATE;
+        //    existingMember.RESIGN_DATE = member.RESIGN_DATE;
+        //    existingMember.GENDER = member.GENDER;
+        //    existingMember.EMAIL = member.EMAIL;
+
+        //    // 비밀번호는 그대로 둠
+        //    // existingMember.PASSWORD 유지
+
+        //    // USEFLAG 강제 세팅
+        //    existingMember.USEFLAG = '1';
+
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateException dbEx)
+        //    {
+        //        Console.WriteLine($"Database Error: {dbEx.InnerException?.Message}");
+        //    }
+        //}
+
+
         //public async void EditService(string OID, T_Member member)
         //{
         //    _context.Entry(member).State = EntityState.Modified;
@@ -98,7 +128,7 @@ namespace DMS.Services
 
         //    try
         //    {
-        //      await _context.SaveChangesAsync();
+        //        await _context.SaveChangesAsync();
         //    }
         //    catch (DbUpdateException dbEx)
         //    {
@@ -106,7 +136,7 @@ namespace DMS.Services
         //    }
         //}
 
-        public bool EditService(string OID, T_Member member)
+        public bool EditService(string OID, [FromBody] T_Member member)
         {
             var memberCheck = _context.Members.SingleOrDefault(u => u.OID == OID);
 
@@ -129,7 +159,7 @@ namespace DMS.Services
                         command.Parameters.Add(new OracleParameter("NAME", member.NAME));
                         command.Parameters.Add(new OracleParameter("MODIFY_DATE", DateTime.Now));
                         command.Parameters.Add(new OracleParameter("OID", OID));
-                        
+
                         int rowsAffected = command.ExecuteNonQuery();
 
                         //Console.WriteLine($"{rowsAffected} row(s) updated successfully.");
@@ -140,7 +170,8 @@ namespace DMS.Services
                          SET BIRTH_DATE = :BIRTHDATE,
                             RESIGN_DATE = :RESIGNDATE,
                             GENDER = :GENDER,
-                            POSITION = :POSITION
+                            POSITION = :POSITION,
+                            EMAIL = :EMAIL
                          WHERE OID = :OID";
 
                     using (OracleCommand command = new OracleCommand(query, connection))
@@ -149,6 +180,7 @@ namespace DMS.Services
                         command.Parameters.Add(new OracleParameter("RESIGNDATE", member.RESIGN_DATE));
                         command.Parameters.Add(new OracleParameter("GENDER", member.GENDER));
                         command.Parameters.Add(new OracleParameter("POSITION", member.POSITION));
+                        command.Parameters.Add(new OracleParameter("EMAIL", member.EMAIL));
                         command.Parameters.Add(new OracleParameter("OID", OID));
 
 
@@ -171,7 +203,7 @@ namespace DMS.Services
                 Console.WriteLine($"Error: {ex.Message}");
                 return false;
             }
-        
+
         }
 
 

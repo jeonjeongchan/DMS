@@ -1,14 +1,7 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using DMS.Models;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Text.Json;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Reflection;
-using System.Xml.Linq;
-using Microsoft.EntityFrameworkCore;
+
 
 namespace DMS.Controllers;
 

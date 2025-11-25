@@ -24,16 +24,13 @@ namespace DMS.Models
         public string? CREATE_USER { get; set; }
         public int? RECENT { get; set; }
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
-        public DateTime? CREATE_DATE { get; set; }
+        public DateTime? CREATE_DATE { get; set; } = DateTime.Now;
         public string? MODIFY_USER { get; set; }
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime? MODIFY_DATE { get; set; }
         public string? DELETE_USER { get; set; }
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime? DELETE_DATE { get; set; }
-        public string? APPROVE_USER { get; set; }
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
-        public DateTime? APPROVE_DATE { get; set; }
         public char? USEFLAG { get; set; }
 
     }

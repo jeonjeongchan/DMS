@@ -1,0 +1,188 @@
+@using Microsoft.AspNetCore.Http
+@using DMS.Models
+
+@model IEnumerable<T_Approval>
+
+@{
+    ViewData["Title"] = "메인화면";
+    ViewData["PageName"] = "approval_approval";
+    ViewData["Category1"] = "결재관리";
+    ViewData["Heading"] = "<i class='subheader-icon fal fa-chart-area'></i> Marketing <span class='fw-300'>결재관리</span>";
+}
+
+@section HeadBlock {
+    <link rel="stylesheet" media="screen, print" href="~/css/datagrid/datatables/datatables.bundle.css">
+    <link rel="stylesheet" media="screen, print" href="~/css/theme-demo.css">
+    <link rel="stylesheet" media="screen, print" href="~/css/fa-solid.css">
+    <link rel="stylesheet" media="screen, print" href="~/css/fa-brands.css">
+}
+
+<!-- 🪟 모달 폼 영역 -->
+<div id="approvalModalContainer"></div>
+
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel">
+            <div class="panel-container show">
+                <div class="panel-content">
+                    <div class="buttons">
+                            <button type="button" id="" class="btn btn-primary" onclick="approvalCreateModal()">등록</button>
+                            <button type="button" id="" class="btn btn-warning" data-toggle="modal">수정</button>
+                            <button type="button" id="" class="btn btn-danger" data-toggle="modal">삭제</button>
+                        </div>
+                    <table id="ApprovalMainTable" class="table table-bordered table-hover table-striped w-100">
+                        <thead class="bg-warning-200">
+                            <tr>
+                                <th>결재번호</th>
+                                <th>결재이름</th>
+                                <th>결재타입</th>
+                                <th>상태</th>
+                                <th>작성자</th>
+                                <th>작성일</th>
+                                <th>결재완료일</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var app in Model)
+                            {
+                                <tr data-oid="@app.OID" ondblclick="">
+                                    <td>
+                                        @Html.DisplayFor(modelItem => app.NAME)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => app.TITLE)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => app.SUBTYPE)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => app.STATE)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => app.CREATE_USER)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => app.CREATE_DATE)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => app.APPROVE_DATE)
+                                    </td>
+                                </tr>
+
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section ScriptsBlock {
+    <script type="text/javascript">$('#js-page-content').smartPanel();</script>
+    <script src="~/js/statistics/peity/peity.bundle.js"></script>
+    <script src="~/js/statistics/flot/flot.bundle.js"></script>
+    <script src="~/js/statistics/easypiechart/easypiechart.bundle.js"></script>
+    <script src="~/js/datagrid/datatables/datatables.bundle.js"></script>
+
+    <script>
+
+        $('#ApprovalMainTable').dataTable({
+            responsive: true,
+            dom:
+                /*	--- Layout Structure
+                    --- Options
+                    l	-	length changing input control
+                    f	-	filtering input
+                    t	-	The table!
+                    i	-	Table information summary
+                    p	-	pagination control
+                    r	-	processing display element
+                    B	-	buttons
+                    R	-	ColReorder
+                    S	-	Select
+                    --- Markup
+                    < and >				- div element
+                    <"class" and >		- div with a class
+                    <"#id" and >		- div with an ID
+                    <"#id.class" and >	- div with an ID and a class
+                    --- Further reading
+                    https://datatables.net/reference/option/dom
+                    --------------------------------------
+                 */
+                "<'row mb-3'<'col-sm-12 col-md-6 d-flex align-items-center justify-content-start'f><'col-sm-12 col-md-6 d-flex align-items-center justify-content-end'B>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            select: 'multiple',
+            //columns: columnSet,
+            //altEditor: true,
+            //responsive: true,
+            buttons: [
+                //{
+                //    text: '등록',
+                //    //data-target: '#writeFormModal',
+                //    //data-toggle: 'modal'
+                //    className: 'btn-outline-default'
+                //}
+                //{
+                //    extend: 'colvis',
+                //    text: 'Column Visibility',
+                //    titleAttr: 'Col visibility',
+                //    className: 'btn-outline-default'
+                //},
+                //{
+                //    extend: 'csvHtml5',
+                //    text: 'CSV',
+                //    titleAttr: 'Generate CSV',
+                //    className: 'btn-outline-default'
+                //},
+                //{
+                //    extend: 'copyHtml5',
+                //    text: 'Copy',
+                //    titleAttr: 'Copy to clipboard',
+                //    className: 'btn-outline-default'
+                //},
+                //{
+                //    extend: 'print',
+                //    text: 'Print',
+                //    titleAttr: 'Print Table',
+                //    className: 'btn-outline-default'
+                //},
+                //{
+                //    extend: 'selected',
+                //    text: '<i class="fal fa-times mr-1"></i> 삭제',
+                //    name: 'delete',
+                //    className: 'btn-primary btn-sm mr-1'
+                //},
+                //{
+                //    extend: 'selected',
+                //    text: '<i class="fal fa-edit mr-1"></i> 수정',
+                //    name: 'edit',
+                //    className: 'btn-primary btn-sm mr-1'
+                //},
+                //{
+                //    text: '<i class="fal fa-plus mr-1"></i> 등록',
+                //    name: 'add',
+                //    className: 'btn-success btn-sm mr-1'
+                //},
+                //{
+                //    text: '<i class="fal fa-sync mr-1"></i> 새로고침',
+                //    name: 'refresh',
+                //    className: 'btn-primary btn-sm'
+                //}
+            ]
+        });
+
+        function approvalCreateModal() {
+            $.get('/Approval/Create', function (html) {
+                $('#approvalModalContainer').html(html);
+                $('#approvalModal').modal('show');
+
+            });
+        }
+
+    </script>
+
+}

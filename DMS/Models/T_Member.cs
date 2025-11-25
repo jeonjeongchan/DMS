@@ -18,6 +18,8 @@ namespace DMS.Models
         public DateTime? RETIRE_DATE { get; set; }
         public string? PHOTO { get; set; }
         public string? GENDER { get; set; }
+        public string? EMAIL { get; set; }
+        public string? GRADE { get; set; }
 
         [NotMapped]
         public string? PasswordHash { get; set; }

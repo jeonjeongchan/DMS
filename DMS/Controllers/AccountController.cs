@@ -1,18 +1,11 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using DMS.Models;
-using DMS.CommonUtil;
-using Microsoft.EntityFrameworkCore;
-using DMS.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
-using BCrypt.Net;
-using Microsoft.AspNetCore.Identity;
 using DMS.Services;
-using DMS.Areas.Identity.Pages.Account;
-using System.Security.Cryptography;
-using Oracle.ManagedDataAccess.Client;
+
 
 namespace DMS.Controllers;
 
@@ -59,6 +52,7 @@ public class AccountController : Controller
                 return View(member);
             }
 
+            member.GRADE = "USER";
             _accountService.RegisterService(member);
 
             // 알림 메시지 설정
@@ -95,6 +89,7 @@ public class AccountController : Controller
                 HttpContext.Session.SetString("OID", memberCheck.OID);
                 HttpContext.Session.SetString("Username", memberCheck.NAME);
                 HttpContext.Session.SetString("UserID", memberCheck.MEMBER_ID);
+                HttpContext.Session.SetString("Grade", memberCheck.GRADE);
 
                 return RedirectToAction("DashBoard", "main");
             }
@@ -129,7 +124,7 @@ public class AccountController : Controller
         return Ok(member); 
     }
 
-    public async Task<IActionResult> Edit(string OID, T_Member member)
+    public async Task<IActionResult> Edit(string OID, [FromBody] T_Member member)
     {
         if (OID != member.OID)
         {

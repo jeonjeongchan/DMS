@@ -23,10 +23,10 @@
                         <input id="myInfoID" type="text" class="form-control" value="" placeholder="">
                     </div>
                     @*<div class="form-group">
-                        <label class="form-label" asp-for="NAME">이름</label>
-                        <input id="myInfoName" type="text" asp-for="NAME" class="form-control" placeholder="이름" value="" required="required" />
-                        <span class="invalid-feedback" asp-validation-for="NAME">이름을 입력해주세요.</span>
-                    </div>*@
+            <label class="form-label" asp-for="NAME">이름</label>
+            <input id="myInfoName" type="text" asp-for="NAME" class="form-control" placeholder="이름" value="" required="required" />
+            <span class="invalid-feedback" asp-validation-for="NAME">이름을 입력해주세요.</span>
+        </div>*@
                     <div class="form-group">
                         <label class="form-label" for="NAME">이름</label>
                         <input id="myInfoName" type="text" class="form-control" value="" placeholder="">
@@ -40,26 +40,34 @@
                         <input id="myInfoResignDate" type="date" class="form-control" value="" placeholder="">
                     </div>
                     <div class="form-group">
+                        <label class="form-label" for="EMAIL">이메일</label>
+                        <input id="myInfoEmail" type="email" class="form-control" value="" placeholder="example@naver.com">
+                    </div>
+                    <div class="form-group">
                         <label class="form-label" for="GENDER">성별</label>
                         <select id="myInfoGender" class="custom-select form-control">
+                            <option value=""></option>
                             <option value="남자">남자</option>
                             <option value="여자">여자</option>
                         </select>
                     </div>
                     @*<div id="myInfoPasswordDiv" class="form-group">
-                <label class="form-label" for="PASSWORD">비밀번호변경</label>
-                <input id="myInfoPassword" type="password" class="form-control" value="" placeholder="">
-            </div>*@
+                        <label class="form-label" for="PASSWORD">비밀번호변경</label>
+                        <input id="myInfoPassword" type="password" class="form-control" value="" placeholder="">
+                    </div>*@
                     <div class="panel-content border-faded border-left-0 border-right-0 border-bottom-0 d-flex flex-row">
-                        <button id="myInfoEdit" class="btn btn-primary">수정</button>
-                        <button id="myInfoCancel" class="btn btn-primary">취소</button>
-                        <button id="myInfoSubmit" class="btn btn-primary">완료</button>
+                        <div>
+                            <button id="myInfoEdit" class="btn btn-primary">수정</button>
+                            <button id="myInfoCancel" class="btn btn-primary">취소</button>
+                            <button id="myInfoSubmit" class="btn btn-primary">완료</button>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
 
 
 
